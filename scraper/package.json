@@ -1,0 +1,29 @@
+{
+  "name": "sweetredeem-scraper",
+  "version": "1.0.0",
+  "description": "SweetRedeem.club — award chart & promo scraper",
+  "private": true,
+  "scripts": {
+    "scrape": "ts-node --project tsconfig.json index.ts",
+    "scrape:flyingblue": "ts-node --project tsconfig.json scrapers/flyingblue.ts",
+    "scrape:krisflyer": "ts-node --project tsconfig.json scrapers/krisflyer.ts",
+    "scrape:hyatt": "ts-node --project tsconfig.json scrapers/hyatt.ts",
+    "scrape:lfal": "ts-node --project tsconfig.json scrapers/lfal.ts",
+    "scrape:airindia": "ts-node --project tsconfig.json scrapers/airindia.ts",
+    "scrape:marriott": "ts-node --project tsconfig.json scrapers/marriott.ts",
+    "scrape:accor": "ts-node --project tsconfig.json scrapers/accor.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.4",
+    "dotenv": "^16.4.5",
+    "fast-xml-parser": "^4.3.6",
+    "pdf-parse": "^1.1.1",
+    "playwright": "^1.44.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "@types/pdf-parse": "^1.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

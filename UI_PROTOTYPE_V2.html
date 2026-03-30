@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maximize — V2 Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset ─────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0A0A0A;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px 80px;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Phone frame ──────────────────────────────────────── */
+  .phone {
+    width: 390px;
+    min-height: 844px;
+    background: #111111;
+    border-radius: 50px;
+    border: 1px solid #2a2a2a;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Dynamic island */
+  .island {
+    width: 126px; height: 34px;
+    background: #000;
+    border-radius: 20px;
+    margin: 14px auto 0;
+    flex-shrink: 0;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 28px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  /* Scrollable screen area */
+  .screen {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 90px;
+    scrollbar-width: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 84px;
+    background: rgba(17,17,17,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 10px 20px;
+    z-index: 100;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 16px;
+    transition: background 0.2s;
+    border: none;
+    background: none;
+    color: #555;
+  }
+  .nav-item.active { color: #fff; }
+  .nav-item .nav-icon { font-size: 22px; }
+  .nav-item .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
+  .nav-item.active .nav-dot {
+    width: 4px; height: 4px; background: #10B981; border-radius: 50%;
+    position: absolute; bottom: 28px;
+  }
+
+  /* ── Typography ────────────────────────────────────────── */
+  .display-xl { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+  .display-lg { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+  .display-md { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .body-sm { font-size: 13px; color: #888; line-height: 1.5; }
+  .mono { font-family: 'SF Mono', 'Fira Code', monospace; }
+
+  /* ── Destination image cards (CSS gradients) ───────────── */
+  .dest-sin    { background: linear-gradient(160deg, #0f2027 0%, #203a43 40%, #2c5364 100%); }
+  .dest-cdg    { background: linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%); }
+  .dest-lhr    { background: linear-gradient(160deg, #1c1c1c 0%, #2d1b69 40%, #11998e 100%); }
+  .dest-maldives { background: linear-gradient(160deg, #005c97 0%, #363795 40%, #0b8793 100%); }
+  .dest-yyz    { background: linear-gradient(160deg, #1a1a1a 0%, #243b55 40%, #141e30 100%); }
+  .dest-auh    { background: linear-gradient(160deg, #f7971e 0%, #c94b4b 40%, #4b134f 100%); }
+  .dest-del    { background: linear-gradient(160deg, #fc4a1a 0%, #f7b733 40%, #fc4a1a 100%); }
+  .dest-bkk    { background: linear-gradient(160deg, #360033 0%, #0b8793 100%); }
+  .dest-hotel  { background: linear-gradient(160deg, #373b44 0%, #4286f4 100%); }
+  .dest-hyatt  { background: linear-gradient(160deg, #1d4350 0%, #a43931 100%); }
+
+  /* ── Section headers ───────────────────────────────────── */
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    margin: 28px 0 14px;
+  }
+  .section-title { font-size: 18px; font-weight: 700; }
+  .see-all { font-size: 13px; color: #10B981; font-weight: 600; cursor: pointer; }
+
+  /* ── Category pills ────────────────────────────────────── */
+  .pill-scroll {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-bottom: 4px;
+  }
+  .pill-scroll::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #2a2a2a;
+    background: #1a1a1a;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .cat-pill.active {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+  }
+
+  /* ── Large hero card ───────────────────────────────────── */
+  .hero-card {
+    margin: 0 20px;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    height: 260px;
+    cursor: pointer;
+  }
+  .hero-card .card-bg { width: 100%; height: 100%; }
+  .hero-card .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+  }
+  .hero-card .program-badge {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .hero-card .value-badge {
+    position: absolute;
+    top: 16px; left: 16px;
+    background: rgba(16,185,129,0.9);
+    backdrop-filter: blur(8px);
+    border-radius: 100px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  /* ── Horizontal scroll deal cards ─────────────────────── */
+  .h-scroll {
+    display: flex;
+    gap: 14px;
+    padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .h-scroll::-webkit-scrollbar { display: none; }
+
+  .deal-card-sm {
+    flex-shrink: 0;
+    width: 180px;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1a1a1a;
+    position: relative;
+  }
+  .deal-card-sm .card-img {
+    height: 130px;
+    position: relative;
+  }
+  .deal-card-sm .card-body { padding: 12px 14px; }
+  .deal-card-sm .route { font-size: 15px; font-weight: 700; }
+  .deal-card-sm .sub { font-size: 11px; color: #666; margin-top: 2px; }
+  .deal-card-sm .pts { font-size: 13px; color: #10B981; font-weight: 700; margin-top: 8px; }
+
+  /* ── Full-width deal cards (Discover page) ─────────────── */
+  .deal-card-full {
+    margin: 0 20px 16px;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1a1a1a;
+    position: relative;
+  }
+  .deal-card-full .card-img { height: 180px; position: relative; }
+  .deal-card-full .card-body { padding: 16px 18px; }
+
+  /* ── Value row ─────────────────────────────────────────── */
+  .value-row {
+    display: flex;
+    gap: 0;
+    margin-top: 14px;
+  }
+  .value-item {
+    flex: 1;
+    padding: 10px 0;
+    border-right: 1px solid #222;
+    padding-right: 12px;
+    margin-right: 12px;
+  }
+  .value-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+  .value-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.08em; }
+  .value-num { font-size: 17px; font-weight: 800; margin-top: 2px; }
+
+  /* ── Tier badge ────────────────────────────────────────── */
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .tier-elite { background: rgba(16,185,129,0.15); color: #10B981; }
+  .tier-high   { background: rgba(52,211,153,0.12); color: #34D399; }
+  .tier-good   { background: rgba(251,191,36,0.12); color: #FBBF24; }
+
+  /* ── Card art ──────────────────────────────────────────── */
+  .card-art {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+  }
+  .card-art-infinia  { background: linear-gradient(135deg, #1a3a5c, #2563eb44); }
+  .card-art-atlas    { background: linear-gradient(135deg, #1c1432, #7c3aed44); }
+  .card-art-amex     { background: linear-gradient(135deg, #1c1a14, #d9770644); }
+  .card-art-magnus   { background: linear-gradient(135deg, #2d1010, #ef444444); }
+  .card-art-hsbc     { background: linear-gradient(135deg, #0d1c0d, #10b98144); }
+
+  /* ── Bottom sheet ──────────────────────────────────────── */
+  .sheet-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .sheet-overlay.open { display: flex; }
+  .bottom-sheet {
+    width: 100%;
+    max-width: 430px;
+    background: #141414;
+    border-radius: 28px 28px 0 0;
+    border: 1px solid #2a2a2a;
+    overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: #333;
+    border-radius: 2px;
+    margin: 12px auto;
+  }
+  .sheet-img {
+    height: 220px;
+    margin: 0 16px;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .sheet-body { padding: 20px 20px 40px; }
+
+  /* ── Profile avatar ────────────────────────────────────── */
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed, #10b981);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── Points balance pill ───────────────────────────────── */
+  .pts-pill {
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #10B981;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Search bar ────────────────────────────────────────── */
+  .search-bar {
+    margin: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    padding: 12px 16px;
+  }
+  .search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #666;
+    font-size: 15px;
+    font-family: inherit;
+  }
+
+  /* ── Calculator ────────────────────────────────────────── */
+  .calc-card {
+    margin: 0 20px;
+    background: #1a1a1a;
+    border-radius: 24px;
+    padding: 20px;
+    border: 1px solid #2a2a2a;
+  }
+  .card-select-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .card-select-scroll::-webkit-scrollbar { display: none; }
+  .card-chip {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #2a2a2a;
+    background: #111;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .card-chip.active {
+    border-color: #10B981;
+    color: #10B981;
+    background: rgba(16,185,129,0.08);
+  }
+  .pts-input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    padding: 16px 18px;
+    color: #fff;
+    font-size: 28px;
+    font-weight: 800;
+    font-family: inherit;
+    outline: none;
+    margin-top: 16px;
+    transition: border-color 0.15s;
+  }
+  .pts-input:focus { border-color: #10B981; }
+  .quick-chips {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .q-chip {
+    flex: 1;
+    padding: 8px;
+    border-radius: 10px;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    color: #666;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.12s;
+  }
+  .q-chip:hover { border-color: #10B981; color: #10B981; }
+
+  /* ── Result card ───────────────────────────────────────── */
+  .result-card {
+    margin: 0 20px 12px;
+    background: #1a1a1a;
+    border-radius: 18px;
+    padding: 16px;
+    border: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .result-card:hover { border-color: #333; }
+  .result-card.best { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.04); }
+  .prog-icon {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ── CTA button ────────────────────────────────────────── */
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    background: #fff;
+    color: #000;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+    margin-top: 16px;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-emerald {
+    background: #10B981;
+    color: #fff;
+  }
+
+  /* ── Inline number counter ─────────────────────────────── */
+  .counter { display: inline-block; }
+
+  /* ── Page label ────────────────────────────────────────── */
+  .page-label {
+    display: none;
+    padding: 20px 20px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .page-label.show { display: block; }
+
+  /* ── Divider ───────────────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: #1a1a1a;
+    margin: 24px 20px;
+  }
+
+  /* ── Stat strip ────────────────────────────────────────── */
+  .stat-strip {
+    display: flex;
+    gap: 0;
+    margin: 0 20px 20px;
+    background: #1a1a1a;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #2a2a2a;
+  }
+  .stat-cell {
+    flex: 1;
+    padding: 14px 16px;
+    border-right: 1px solid #2a2a2a;
+    text-align: center;
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-val { font-size: 20px; font-weight: 800; color: #10B981; }
+  .stat-lbl { font-size: 10px; color: #555; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ── Transfer table ────────────────────────────────────── */
+  .tx-table { margin: 0 20px; }
+  .tx-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #1a1a1a;
+    border-radius: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .tx-row:hover { background: #222; }
+
+  /* ── App tabs (demo only) ──────────────────────────────── */
+  .demo-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 0 8px;
+    position: sticky;
+    top: 0;
+    background: #0A0A0A;
+    z-index: 300;
+    flex-wrap: wrap;
+  }
+  .demo-tab {
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid #2a2a2a;
+    background: #1a1a1a;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .demo-tab.active {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+  }
+
+  /* Page containers */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── Misc helpers ──────────────────────────────────────── */
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .px-20 { padding: 0 20px; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-20 { margin-top: 20px; }
+  .green { color: #10B981; }
+  .muted { color: #666; }
+  .semibold { font-weight: 600; }
+  .bold { font-weight: 700; }
+
+  /* Lock overlay */
+  .lock-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(17,17,17,0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 20px;
+  }
+  .lock-text { font-size: 12px; font-weight: 600; color: #888; }
+
+  /* Inline value calc */
+  .value-display {
+    background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05));
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: 16px;
+    text-align: center;
+    display: none;
+  }
+  .value-display.show { display: block; }
+  .big-value { font-size: 42px; font-weight: 900; color: #10B981; letter-spacing: -0.04em; }
+  .vs-bank { font-size: 13px; color: #888; margin-top: 4px; }
+  .multiplier { font-size: 15px; font-weight: 700; color: #10B981; }
+
+  /* ── Horizontal scroll cards for popular ──────────────── */
+  .popular-card {
+    flex-shrink: 0;
+    width: 200px;
+    background: #1a1a1a;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  .popular-card .pcard-img { height: 140px; }
+  .popular-card .pcard-body { padding: 12px 14px 14px; }
+
+  /* Floating "new" badge */
+  .new-badge {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: #7C3AED;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 100px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── Card museum (Cards page) ──────────────────────────── */
+  .card-museum-scroll {
+    display: flex;
+    gap: 14px;
+    padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .card-museum-scroll::-webkit-scrollbar { display: none; }
+  .museum-card {
+    flex-shrink: 0;
+    width: 280px;
+    height: 165px;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid #2a2a2a;
+    transition: transform 0.2s;
+    position: relative;
+  }
+  .museum-card:hover { transform: translateY(-4px); }
+
+  /* ── Discover filter row ───────────────────────────────── */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-bottom: 20px;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  /* ── Route chip ────────────────────────────────────────── */
+  .route-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .route-arrow { color: #555; font-size: 14px; font-weight: 400; }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DEMO CONTROLS
+═══════════════════════════════════════════════════════════ -->
+<div style="width:100%; text-align:center; padding:10px 0 0;">
+  <div style="font-size:13px; color:#555; margin-bottom:12px;">← Scroll phone screens to explore each page →</div>
+  <div class="demo-tabs">
+    <button class="demo-tab active" onclick="showPage('home')">🏠 Home</button>
+    <button class="demo-tab" onclick="showPage('discover')">🔍 Discover</button>
+    <button class="demo-tab" onclick="showPage('calculate')">⚡ Calculate</button>
+    <button class="demo-tab" onclick="showPage('cards')">💳 Cards</button>
+    <button class="demo-tab" onclick="showPage('design')">🎨 Design System</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHONE FRAME
+═══════════════════════════════════════════════════════════ -->
+<div class="phone" id="mainPhone">
+  <div class="island"></div>
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>📶 🔋</span>
+  </div>
+
+  <div class="screen" id="mainScreen">
+
+    <!-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+         HOME PAGE
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+    <div class="page active" id="page-home">
+
+      <!-- Header -->
+      <div class="flex-between px-20 mt-20">
+        <div>
+          <div style="font-size:13px; color:#666; font-weight:500;">Good morning,</div>
+          <div style="font-size:22px; font-weight:800; letter-spacing:-0.02em; margin-top:1px;">Garvit 👋</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="pts-pill">
+            <span>✦</span>
+            <span>1,24,500 pts</span>
+          </div>
+          <div class="avatar">G</div>
+        </div>
+      </div>
+
+      <!-- Search bar -->
+      <div class="search-bar mt-20">
+        <span style="font-size:18px;">🔍</span>
+        <input class="search-input" placeholder="Search routes, programs…" readonly>
+        <div style="width:32px;height:32px;background:#2a2a2a;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;">⊞</div>
+      </div>
+
+      <!-- Category pills -->
+      <div class="pill-scroll mt-16">
+        <div class="cat-pill active" onclick="selectCat(this)">All</div>
+        <div class="cat-pill" onclick="selectCat(this)">Business ✈️</div>
+        <div class="cat-pill" onclick="selectCat(this)">Economy</div>
+        <div class="cat-pill" onclick="selectCat(this)">First Class</div>
+        <div class="cat-pill" onclick="selectCat(this)">Hotels 🏨</div>
+        <div class="cat-pill" onclick="selectCat(this)">Flash Sales ⚡</div>
+      </div>
+
+      <!-- Hero featured deal -->
+      <div class="section-head mt-12">
+        <span class="section-title">🔥 Top deal for you</span>
+      </div>
+
+      <div class="hero-card" onclick="openSheet('sin-sheet')">
+        <div class="card-bg dest-sin"></div>
+        <div class="card-overlay">
+          <div class="value-badge">₹2.1L value</div>
+          <div class="program-badge">KrisFlyer</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Singapore Airlines Business</div>
+          <div class="route-chip">
+            BOM <span class="route-arrow">→</span> SIN
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+            <span style="font-size:13px;color:rgba(255,255,255,0.7);">55,000 miles</span>
+            <span class="tier-badge tier-elite">Elite ₹2.10/pt</span>
+          </div>
+          <button class="btn-primary btn-emerald" style="margin-top:12px;padding:12px;" onclick="event.stopPropagation();openSheet('sin-sheet')">
+            View details →
+          </button>
+        </div>
+      </div>
+
+      <!-- For you section -->
+      <div class="section-head">
+        <span class="section-title">For you · HDFC Infinia</span>
+        <span class="see-all">See all</span>
+      </div>
+
+      <div class="h-scroll">
+        <!-- BOM→CDG -->
+        <div class="deal-card-sm" onclick="openSheet('cdg-sheet')">
+          <div class="card-img dest-cdg">
+            <div style="position:absolute;bottom:10px;left:12px;">
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);">Flying Blue</div>
+              <div class="route-chip" style="font-size:14px;">DEL <span class="route-arrow">→</span> CDG</div>
+            </div>
+            <div class="new-badge">Flash 🌩</div>
+          </div>
+          <div class="card-body">
+            <div class="pts" style="font-size:12px;">12K pts · ₹35K value</div>
+            <div class="sub">Economy · ₹2.9/pt</div>
+          </div>
+        </div>
+
+        <!-- BOM→LHR -->
+        <div class="deal-card-sm" onclick="openSheet('lhr-sheet')">
+          <div class="card-img dest-lhr">
+            <div style="position:absolute;bottom:10px;left:12px;">
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);">Etihad Guest</div>
+              <div class="route-chip" style="font-size:14px;">BOM <span class="route-arrow">→</span> LHR</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="pts" style="font-size:12px;">58K pts · ₹2.4L value</div>
+            <div class="sub">Business · ₹1.96/pt</div>
+          </div>
+        </div>
+
+        <!-- BOM→YYZ -->
+        <div class="deal-card-sm" onclick="openSheet('yyz-sheet')">
+          <div class="card-img dest-yyz">
+            <div style="position:absolute;bottom:10px;left:12px;">
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);">Aeroplan</div>
+              <div class="route-chip" style="font-size:14px;">BOM <span class="route-arrow">→</span> YYZ</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="pts" style="font-size:12px;">70K pts · ₹2.5L value</div>
+            <div class="sub">Business · ₹2.04/pt</div>
+          </div>
+        </div>
+
+        <!-- Maldives -->
+        <div class="deal-card-sm" onclick="openSheet('hotel-sheet')">
+          <div class="card-img dest-maldives">
+            <div style="position:absolute;bottom:10px;left:12px;">
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);">KrisFlyer</div>
+              <div class="route-chip" style="font-size:14px;">MLE 🏝</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="pts" style="font-size:12px;">35K pts · ₹95K value</div>
+            <div class="sub">Hotel · ₹2.71/pt</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popular section -->
+      <div class="section-head">
+        <span class="section-title">Popular this week</span>
+        <span class="see-all">See all</span>
+      </div>
+
+      <div class="h-scroll" style="gap:14px;">
+        <div class="popular-card" onclick="openSheet('cdg-sheet')">
+          <div class="pcard-img dest-cdg"></div>
+          <div class="pcard-body">
+            <div style="font-size:14px;font-weight:700;">DEL → CDG</div>
+            <div style="font-size:11px;color:#666;margin-top:2px;">Flying Blue · Economy</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <span style="font-size:13px;color:#10B981;font-weight:700;">₹35K</span>
+              <span style="font-size:11px;color:#555;">12,000 pts</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="popular-card">
+          <div class="pcard-img dest-bkk">
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);border-radius:0;"></div>
+          </div>
+          <div class="pcard-body">
+            <div style="font-size:14px;font-weight:700;">BOM → BKK</div>
+            <div style="font-size:11px;color:#666;margin-top:2px;">KrisFlyer · Economy</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <span style="font-size:13px;color:#10B981;font-weight:700;">₹28K</span>
+              <span style="font-size:11px;color:#555;">17,500 pts</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="popular-card">
+          <div class="pcard-img dest-auh"></div>
+          <div class="pcard-body">
+            <div style="font-size:14px;font-weight:700;">BOM → DXB</div>
+            <div style="font-size:11px;color:#666;margin-top:2px;">Etihad · Business</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <span style="font-size:13px;color:#10B981;font-weight:700;">₹82K</span>
+              <span style="font-size:11px;color:#555;">30,000 pts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat strip -->
+      <div style="height:24px;"></div>
+      <div class="stat-strip">
+        <div class="stat-cell">
+          <div class="stat-val">93</div>
+          <div class="stat-lbl">Routes</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val">3.2×</div>
+          <div class="stat-lbl">Avg uplift</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val">14</div>
+          <div class="stat-lbl">Cards</div>
+        </div>
+      </div>
+
+    </div><!-- /page-home -->
+
+
+    <!-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+         DISCOVER PAGE
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+    <div class="page" id="page-discover">
+
+      <div class="flex-between px-20 mt-20">
+        <div class="display-lg">Discover</div>
+        <div style="width:36px;height:36px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;">⊞</div>
+      </div>
+      <div style="padding:4px 20px 0; font-size:13px; color:#555;">Best awards right now — verified &amp; ranked</div>
+
+      <!-- Filter pills -->
+      <div class="filter-row mt-16">
+        <div class="cat-pill active" style="font-size:12px;" onclick="selectCat(this)">All</div>
+        <div class="cat-pill" style="font-size:12px;" onclick="selectCat(this)">Business ✈️</div>
+        <div class="cat-pill" style="font-size:12px;" onclick="selectCat(this)">Economy</div>
+        <div class="cat-pill" style="font-size:12px;" onclick="selectCat(this)">Hotels</div>
+        <div class="cat-pill" style="font-size:12px;" onclick="selectCat(this)">Asia</div>
+        <div class="cat-pill" style="font-size:12px;" onclick="selectCat(this)">Europe</div>
+        <div class="cat-pill" style="font-size:12px;" onclick="selectCat(this)">Americas</div>
+      </div>
+
+      <!-- Deal 1 — SIN Business -->
+      <div class="deal-card-full" onclick="openSheet('sin-sheet')">
+        <div class="card-img dest-sin">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);"></div>
+          <div style="position:absolute;bottom:14px;left:16px;right:16px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;">via KrisFlyer</div>
+            <div style="font-size:19px;font-weight:800;letter-spacing:-0.01em;">BOM → SIN Business</div>
+          </div>
+          <span class="tier-badge tier-elite" style="position:absolute;top:14px;left:16px;">Elite ₹2.10/pt</span>
+          <span style="position:absolute;top:14px;right:16px;font-size:20px;">✈️</span>
+        </div>
+        <div class="card-body" style="padding:14px 16px 16px;">
+          <div class="value-row">
+            <div class="value-item">
+              <div class="value-label">Points</div>
+              <div class="value-num mono">55,000</div>
+            </div>
+            <div class="value-item">
+              <div class="value-label">Cash Value</div>
+              <div class="value-num green mono">₹2,10,000</div>
+            </div>
+            <div class="value-item">
+              <div class="value-label">CPP</div>
+              <div class="value-num green mono">₹2.10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deal 2 — CDG Economy (locked) -->
+      <div class="deal-card-full" style="position:relative;" onclick="openSheet('cdg-sheet')">
+        <div class="card-img dest-cdg" style="filter:blur(3px)">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);"></div>
+          <div style="position:absolute;bottom:14px;left:16px;right:16px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;">via Flying Blue</div>
+            <div style="font-size:19px;font-weight:800;letter-spacing:-0.01em;">DEL → CDG Flash Sale</div>
+          </div>
+          <span class="new-badge" style="position:static;display:inline-block;">⚡ Flash Sale</span>
+        </div>
+        <div class="lock-overlay" style="border-radius:0;top:0;left:0;right:0;bottom:auto;height:180px;position:absolute;">
+          <span style="font-size:28px;">🔒</span>
+          <span class="lock-text">Members only — sign up free</span>
+          <button style="background:#fff;color:#000;border:none;padding:8px 20px;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px;">Unlock →</button>
+        </div>
+        <div class="card-body" style="padding:14px 16px 16px;filter:blur(4px);">
+          <div class="value-row">
+            <div class="value-item"><div class="value-label">Points</div><div class="value-num mono">12,000</div></div>
+            <div class="value-item"><div class="value-label">Cash Value</div><div class="value-num green mono">₹35,000</div></div>
+            <div class="value-item"><div class="value-label">CPP</div><div class="value-num green mono">₹2.91</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deal 3 — LHR Business -->
+      <div class="deal-card-full" onclick="openSheet('lhr-sheet')">
+        <div class="card-img dest-lhr">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);"></div>
+          <div style="position:absolute;bottom:14px;left:16px;right:16px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;">via Etihad Guest</div>
+            <div style="font-size:19px;font-weight:800;letter-spacing:-0.01em;">BOM → LHR Business Studio</div>
+          </div>
+          <span class="tier-badge tier-high" style="position:absolute;top:14px;left:16px;">High ₹1.96/pt</span>
+        </div>
+        <div class="card-body" style="padding:14px 16px 16px;">
+          <div class="value-row">
+            <div class="value-item"><div class="value-label">Points</div><div class="value-num mono">58,000</div></div>
+            <div class="value-item"><div class="value-label">Cash Value</div><div class="value-num green mono">₹2,40,000</div></div>
+            <div class="value-item"><div class="value-label">CPP</div><div class="value-num green mono">₹1.96</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deal 4 — Maldives hotel -->
+      <div class="deal-card-full" onclick="openSheet('hotel-sheet')">
+        <div class="card-img dest-maldives">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);"></div>
+          <div style="position:absolute;bottom:14px;left:16px;right:16px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;">via World of Hyatt</div>
+            <div style="font-size:19px;font-weight:800;letter-spacing:-0.01em;">Park Hyatt Maldives</div>
+          </div>
+          <span class="tier-badge tier-elite" style="position:absolute;top:14px;left:16px;">Elite ₹2.71/pt</span>
+          <span style="position:absolute;top:14px;right:16px;font-size:20px;">🏨</span>
+        </div>
+        <div class="card-body" style="padding:14px 16px 16px;">
+          <div class="value-row">
+            <div class="value-item"><div class="value-label">Points</div><div class="value-num mono">35,000</div></div>
+            <div class="value-item"><div class="value-label">Cash Value</div><div class="value-num green mono">₹95,000</div></div>
+            <div class="value-item"><div class="value-label">CPP</div><div class="value-num green mono">₹2.71</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-discover -->
+
+
+    <!-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+         CALCULATE PAGE
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+    <div class="page" id="page-calculate">
+
+      <div class="px-20 mt-20">
+        <div class="display-lg">Calculator</div>
+        <div style="font-size:13px;color:#555;margin-top:4px;">See exactly what your points are worth</div>
+      </div>
+
+      <!-- Calculator card -->
+      <div class="calc-card mt-20">
+        <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Select card</div>
+        <div class="card-select-scroll">
+          <div class="card-chip active" onclick="selectCardChip(this, 'infinia')">HDFC Infinia</div>
+          <div class="card-chip" onclick="selectCardChip(this, 'atlas')">Axis Atlas</div>
+          <div class="card-chip" onclick="selectCardChip(this, 'amex')">Amex Plat</div>
+          <div class="card-chip" onclick="selectCardChip(this, 'magnus')">Axis Magnus</div>
+          <div class="card-chip" onclick="selectCardChip(this, 'hsbc')">HSBC Premier</div>
+        </div>
+
+        <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-top:18px;margin-bottom:6px;">Points balance</div>
+        <input class="pts-input" id="calcInput" type="number" placeholder="0" oninput="calcUpdate()">
+        <div class="quick-chips">
+          <div class="q-chip" onclick="setPoints(10000)">10K</div>
+          <div class="q-chip" onclick="setPoints(50000)">50K</div>
+          <div class="q-chip" onclick="setPoints(100000)">1L</div>
+          <div class="q-chip" onclick="setPoints(500000)">5L</div>
+        </div>
+
+        <!-- Value display -->
+        <div class="value-display" id="valueDisplay">
+          <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Best possible value</div>
+          <div class="big-value" id="bigValue">₹0</div>
+          <div class="vs-bank">via <span id="bestProg">KrisFlyer Business</span></div>
+          <div class="multiplier" id="multiplierText" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="resultsSection" style="display:none;">
+        <div class="section-head" style="margin-top:28px;">
+          <span class="section-title">Transfer options</span>
+          <span class="see-all">Best first</span>
+        </div>
+
+        <!-- Result rows -->
+        <div class="result-card best" onclick="openSheet('sin-sheet')">
+          <div class="prog-icon">✈️</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;">KrisFlyer</div>
+            <div style="font-size:12px;color:#555;margin-top:2px;">1:1 · Business class</div>
+          </div>
+          <div style="text-align:right;">
+            <div id="r1-val" class="green" style="font-size:16px;font-weight:800;">—</div>
+            <div style="font-size:11px;color:#555;margin-top:1px;">₹2.10/pt</div>
+          </div>
+        </div>
+
+        <div class="result-card" onclick="openSheet('yyz-sheet')">
+          <div class="prog-icon">🍁</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;">Aeroplan</div>
+            <div style="font-size:12px;color:#555;margin-top:2px;">1:1 · Business class</div>
+          </div>
+          <div style="text-align:right;">
+            <div id="r2-val" class="green" style="font-size:16px;font-weight:800;">—</div>
+            <div style="font-size:11px;color:#555;margin-top:1px;">₹2.04/pt</div>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="prog-icon">🌿</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;">Flying Blue</div>
+            <div style="font-size:12px;color:#555;margin-top:2px;">1:1 · Economy</div>
+          </div>
+          <div style="text-align:right;">
+            <div id="r3-val" class="green" style="font-size:16px;font-weight:800;">—</div>
+            <div style="font-size:11px;color:#555;margin-top:1px;">₹1.90/pt</div>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="prog-icon">🏨</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;">Marriott Bonvoy</div>
+            <div style="font-size:12px;color:#555;margin-top:2px;">1:1 · Hotel</div>
+          </div>
+          <div style="text-align:right;">
+            <div id="r4-val" style="font-size:16px;font-weight:800;color:#FBBF24;">—</div>
+            <div style="font-size:11px;color:#555;margin-top:1px;">₹0.90/pt</div>
+          </div>
+        </div>
+
+        <!-- Baseline comparison -->
+        <div style="margin:20px 20px 0;padding:16px;background:#1a1a1a;border-radius:18px;border:1px solid #2a2a2a;">
+          <div style="font-size:12px;color:#555;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em;">vs. your bank's options</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:13px;color:#888;">Statement Credit</span>
+            <span id="b1-val" style="font-size:13px;color:#EF4444;font-weight:700;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:#888;">Bank Rewards Portal</span>
+            <span id="b2-val" style="font-size:13px;color:#F97316;font-weight:700;">—</span>
+          </div>
+          <div style="height:1px;background:#222;margin:12px 0;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;font-weight:700;color:#fff;">Best transfer value</span>
+            <span id="b3-val" class="green" style="font-size:13px;font-weight:800;">—</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-calculate -->
+
+
+    <!-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+         CARDS PAGE
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+    <div class="page" id="page-cards">
+
+      <div class="px-20 mt-20">
+        <div class="display-lg">My Arsenal</div>
+        <div style="font-size:13px;color:#555;margin-top:4px;">Transfer routes &amp; best uses for each card</div>
+      </div>
+
+      <!-- Card museum scroll -->
+      <div style="margin-top:20px;margin-bottom:6px;padding:0 20px;">
+        <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.08em;">Select card</div>
+      </div>
+      <div class="card-museum-scroll">
+        <!-- HDFC Infinia -->
+        <div class="museum-card card-art-infinia" onclick="selectMuseumCard(this,'HDFC Infinia','HDFC Bank','1:1','2.10','0.50')">
+          <div class="card-art" style="background:none;position:absolute;inset:0;border-radius:0;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="width:36px;height:26px;background:rgba(37,99,235,0.4);border-radius:6px;border:1px solid rgba(37,99,235,0.3);"></div>
+              <span style="font-size:10px;font-weight:800;color:#3B82F6;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);padding:3px 8px;border-radius:100px;">Ultra Premium</span>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:800;letter-spacing:-0.01em;">HDFC Infinia</div>
+              <div style="font-size:11px;color:#3B82F6;margin-top:2px;">HDFC Bank · Reward Points</div>
+              <div style="font-size:12px;color:#10B981;font-weight:700;margin-top:6px;">Best CPP: ₹2.10/pt</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Axis Atlas -->
+        <div class="museum-card card-art-atlas" onclick="selectMuseumCard(this,'Axis Atlas','Axis Bank','5:2','1.85','0.42')">
+          <div class="card-art" style="background:none;position:absolute;inset:0;border-radius:0;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="width:36px;height:26px;background:rgba(124,58,237,0.4);border-radius:6px;border:1px solid rgba(124,58,237,0.3);"></div>
+              <span style="font-size:10px;font-weight:800;color:#A78BFA;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);padding:3px 8px;border-radius:100px;">Premium</span>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:800;letter-spacing:-0.01em;">Axis Atlas</div>
+              <div style="font-size:11px;color:#A78BFA;margin-top:2px;">Axis Bank · EDGE Miles</div>
+              <div style="font-size:12px;color:#10B981;font-weight:700;margin-top:6px;">Best CPP: ₹1.85/pt</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amex -->
+        <div class="museum-card card-art-amex" onclick="selectMuseumCard(this,'Amex Platinum','American Express','2:1 Avios','1.60','0.45')">
+          <div class="card-art" style="background:none;position:absolute;inset:0;border-radius:0;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="width:36px;height:26px;background:rgba(217,119,6,0.4);border-radius:6px;border:1px solid rgba(217,119,6,0.3);"></div>
+              <span style="font-size:10px;font-weight:800;color:#D97706;background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.2);padding:3px 8px;border-radius:100px;">Ultra Premium</span>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:800;letter-spacing:-0.01em;">Amex Platinum</div>
+              <div style="font-size:11px;color:#D97706;margin-top:2px;">American Express · MR</div>
+              <div style="font-size:12px;color:#10B981;font-weight:700;margin-top:6px;">Best CPP: ₹1.60/pt</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HSBC -->
+        <div class="museum-card card-art-hsbc" onclick="selectMuseumCard(this,'HSBC Premier','HSBC Bank','1:1','1.80','0.50')">
+          <div class="card-art" style="background:none;position:absolute;inset:0;border-radius:0;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="width:36px;height:26px;background:rgba(16,185,129,0.4);border-radius:6px;border:1px solid rgba(16,185,129,0.3);"></div>
+              <span style="font-size:10px;font-weight:800;color:#10B981;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);padding:3px 8px;border-radius:100px;">Premium</span>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:800;letter-spacing:-0.01em;">HSBC Premier</div>
+              <div style="font-size:11px;color:#10B981;margin-top:2px;">HSBC Bank · Free</div>
+              <div style="font-size:12px;color:#10B981;font-weight:700;margin-top:6px;">Best CPP: ₹1.80/pt</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected card info panel -->
+      <div id="cardPanel" style="margin:20px 20px 0;background:#1a1a1a;border-radius:20px;padding:18px;border:1px solid #2a2a2a;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+          <div>
+            <div id="panelName" style="font-size:17px;font-weight:800;">HDFC Infinia</div>
+            <div id="panelIssuer" style="font-size:12px;color:#555;margin-top:2px;">HDFC Bank</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.08em;">Multiplier</div>
+            <div id="panelMulti" class="green" style="font-size:22px;font-weight:900;">4.2×</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:#111;border-radius:12px;padding:12px;">
+            <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.06em;">Best CPP</div>
+            <div id="panelBest" class="green" style="font-size:18px;font-weight:800;margin-top:3px;">₹2.10/pt</div>
+          </div>
+          <div style="background:#111;border-radius:12px;padding:12px;">
+            <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.06em;">Cash CPP</div>
+            <div id="panelCash" style="font-size:18px;font-weight:800;margin-top:3px;color:#EF4444;">₹0.50/pt</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transfer routes -->
+      <div class="section-head">
+        <span class="section-title">Transfer routes</span>
+        <span id="panelRatio" style="font-size:13px;color:#555;font-weight:600;">1:1 ratio</span>
+      </div>
+
+      <div class="tx-table">
+        <div class="tx-row">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#111;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;">✈️</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;">KrisFlyer</div>
+              <div style="font-size:11px;color:#555;">Singapore Airlines</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tier-badge tier-elite">Elite</div>
+            <div style="font-size:13px;font-weight:700;color:#10B981;margin-top:4px;">₹2.10/pt</div>
+          </div>
+        </div>
+
+        <div class="tx-row">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#111;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;">🍁</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;">Aeroplan</div>
+              <div style="font-size:11px;color:#555;">Air Canada</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tier-badge tier-elite">Elite</div>
+            <div style="font-size:13px;font-weight:700;color:#10B981;margin-top:4px;">₹2.04/pt</div>
+          </div>
+        </div>
+
+        <div class="tx-row">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#111;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;">🌿</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;">Flying Blue</div>
+              <div style="font-size:11px;color:#555;">Air France / KLM</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tier-badge tier-elite">Elite</div>
+            <div style="font-size:13px;font-weight:700;color:#10B981;margin-top:4px;">₹1.90/pt</div>
+          </div>
+        </div>
+
+        <div class="tx-row">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#111;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏨</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;">Marriott Bonvoy</div>
+              <div style="font-size:11px;color:#555;">Hotels</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tier-badge tier-good">Good</div>
+            <div style="font-size:13px;font-weight:700;color:#FBBF24;margin-top:4px;">₹0.90/pt</div>
+          </div>
+        </div>
+
+        <div class="tx-row" style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.1);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#111;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;">💸</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;">Statement Credit</div>
+              <div style="font-size:11px;color:#555;">Worst option</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tier-badge" style="background:rgba(239,68,68,0.1);color:#EF4444;">Poor</div>
+            <div style="font-size:13px;font-weight:700;color:#EF4444;margin-top:4px;">₹0.50/pt</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-cards -->
+
+
+    <!-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+         DESIGN SYSTEM PAGE
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+    <div class="page" id="page-design">
+      <div class="px-20 mt-20">
+        <div class="display-lg">Design System V2</div>
+        <div style="font-size:13px;color:#555;margin-top:4px;">Tokens, components, type</div>
+      </div>
+
+      <!-- Colours -->
+      <div class="section-head" style="margin-top:24px;">
+        <span class="section-title" style="font-size:15px;">Colours</span>
+      </div>
+      <div style="padding:0 20px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:80px;height:52px;background:#111111;border-radius:12px;border:1px solid #2a2a2a;display:flex;align-items:flex-end;padding:6px 8px;"><span style="font-size:9px;color:#555;">#111111<br>Base</span></div>
+          <div style="flex:1;min-width:80px;height:52px;background:#1a1a1a;border-radius:12px;border:1px solid #2a2a2a;display:flex;align-items:flex-end;padding:6px 8px;"><span style="font-size:9px;color:#555;">#1a1a1a<br>Surface</span></div>
+          <div style="flex:1;min-width:80px;height:52px;background:#2a2a2a;border-radius:12px;border:1px solid #333;display:flex;align-items:flex-end;padding:6px 8px;"><span style="font-size:9px;color:#555;">#2a2a2a<br>Border</span></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;height:52px;background:#10B981;border-radius:12px;display:flex;align-items:flex-end;padding:6px 8px;"><span style="font-size:9px;color:rgba(0,0,0,0.7);">#10B981<br>Emerald / Value</span></div>
+          <div style="flex:1;height:52px;background:#ffffff;border-radius:12px;display:flex;align-items:flex-end;padding:6px 8px;"><span style="font-size:9px;color:#333;">#FFFFFF<br>Primary CTA</span></div>
+          <div style="flex:1;height:52px;background:#EF4444;border-radius:12px;display:flex;align-items:flex-end;padding:6px 8px;"><span style="font-size:9px;color:rgba(255,255,255,0.8);">#EF4444<br>Danger/Poor</span></div>
+        </div>
+      </div>
+
+      <!-- Typography -->
+      <div class="section-head" style="margin-top:20px;">
+        <span class="section-title" style="font-size:15px;">Typography (Inter)</span>
+      </div>
+      <div style="padding:0 20px;display:flex;flex-direction:column;gap:6px;">
+        <div style="font-size:32px;font-weight:900;letter-spacing:-0.03em;">Display XL · 900</div>
+        <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#ccc;">Display MD · 800</div>
+        <div style="font-size:16px;font-weight:700;color:#aaa;">Section Title · 700</div>
+        <div style="font-size:13px;font-weight:500;color:#888;">Body · 500</div>
+        <div style="font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.1em;">LABEL · 600</div>
+        <div style="font-size:18px;font-family:monospace;font-weight:700;color:#10B981;">₹2,10,000 mono</div>
+      </div>
+
+      <!-- Components -->
+      <div class="section-head" style="margin-top:20px;">
+        <span class="section-title" style="font-size:15px;">Components</span>
+      </div>
+      <div style="padding:0 20px;display:flex;flex-direction:column;gap:12px;">
+        <button class="btn-primary" style="margin-top:0;">Primary Button</button>
+        <button class="btn-primary btn-emerald" style="margin-top:0;">Emerald CTA</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="tier-badge tier-elite">Elite</span>
+          <span class="tier-badge tier-high">High Value</span>
+          <span class="tier-badge tier-good">Good</span>
+          <span class="tier-badge" style="background:rgba(239,68,68,0.1);color:#EF4444;">Poor</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div class="cat-pill active">Active pill</div>
+          <div class="cat-pill">Inactive</div>
+        </div>
+        <div class="pts-pill" style="width:fit-content;">✦ 1,24,500 pts</div>
+      </div>
+
+      <!-- Spacing -->
+      <div style="height:24px;"></div>
+
+    </div><!-- /page-design -->
+
+  </div><!-- /screen -->
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="navTo('home', this)" id="nav-home">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="navTo('discover', this)" id="nav-discover">
+      <span class="nav-icon">🔍</span>
+      <span class="nav-label">Discover</span>
+    </button>
+    <button class="nav-item" onclick="navTo('calculate', this)" id="nav-calculate">
+      <span class="nav-icon">⚡</span>
+      <span class="nav-label">Calculate</span>
+    </button>
+    <button class="nav-item" onclick="navTo('cards', this)" id="nav-cards">
+      <span class="nav-icon">💳</span>
+      <span class="nav-label">Cards</span>
+    </button>
+  </nav>
+
+</div><!-- /phone -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     BOTTOM SHEETS
+═══════════════════════════════════════════════════════════ -->
+
+<!-- Singapore BOM→SIN sheet -->
+<div class="sheet-overlay" id="sin-sheet">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-sin" style="position:relative;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);border-radius:20px;"></div>
+      <div style="position:absolute;bottom:16px;left:20px;right:20px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Singapore Airlines · KrisFlyer</div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em;">BOM → SIN</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:4px;">Business Class · Suites</div>
+      </div>
+      <button onclick="closeSheet('sin-sheet')" style="position:absolute;top:16px;right:16px;width:32px;height:32px;background:rgba(0,0,0,0.5);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <div class="tier-badge tier-elite" style="margin-bottom:8px;">⭐ Elite value deal</div>
+          <div style="font-size:28px;font-weight:900;color:#10B981;letter-spacing:-0.03em;">₹2,10,000</div>
+          <div style="font-size:13px;color:#555;margin-top:2px;">estimated cash value</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:#555;margin-bottom:4px;">Points required</div>
+          <div style="font-size:22px;font-weight:800;font-family:monospace;">55,000</div>
+          <div style="font-size:12px;color:#10B981;margin-top:2px;">₹2.10 per point</div>
+        </div>
+      </div>
+
+      <div style="background:#1a1a1a;border-radius:16px;overflow:hidden;border:1px solid #2a2a2a;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Program</span>
+          <span style="font-size:13px;font-weight:600;">KrisFlyer</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Transfer ratio</span>
+          <span style="font-size:13px;font-weight:600;color:#10B981;">1:1 (no loss)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Processing time</span>
+          <span style="font-size:13px;font-weight:600;">24–48 hrs</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">vs Statement Credit</span>
+          <span style="font-size:13px;font-weight:700;color:#10B981;">+4.2× better</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;">
+          <span style="font-size:13px;color:#888;">Last verified</span>
+          <span style="font-size:13px;font-weight:600;">March 2026</span>
+        </div>
+      </div>
+
+      <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);border-radius:14px;padding:14px;margin-bottom:16px;font-size:13px;color:#888;line-height:1.5;">
+        ⚠️ <strong style="color:#fff;">Always verify award availability</strong> before transferring points. Transfers are irreversible. Check KrisFlyer.com first.
+      </div>
+
+      <button class="btn-primary" onclick="closeSheet('sin-sheet')">Open KrisFlyer →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CDG Flash Sale sheet -->
+<div class="sheet-overlay" id="cdg-sheet">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-cdg" style="position:relative;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);border-radius:20px;"></div>
+      <div style="position:absolute;bottom:16px;left:20px;right:20px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Air France · Flying Blue</div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em;">DEL → CDG</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:4px;">Economy · Flash Sale ⚡</div>
+      </div>
+      <button onclick="closeSheet('cdg-sheet')" style="position:absolute;top:16px;right:16px;width:32px;height:32px;background:rgba(0,0,0,0.5);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="new-badge" style="position:static;display:inline-block;margin-bottom:12px;">⚡ Flash Sale — limited time</div>
+      <div style="font-size:28px;font-weight:900;color:#10B981;letter-spacing:-0.03em;">₹35,000</div>
+      <div style="font-size:13px;color:#555;margin-top:2px;margin-bottom:16px;">12,000 pts · ₹2.91/pt</div>
+
+      <div style="background:#1a1a1a;border-radius:16px;overflow:hidden;border:1px solid #2a2a2a;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Program</span>
+          <span style="font-size:13px;font-weight:600;">Flying Blue</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Transfer ratio</span>
+          <span style="font-size:13px;font-weight:600;color:#10B981;">1:1</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;">
+          <span style="font-size:13px;color:#888;">Sale ends</span>
+          <span style="font-size:13px;font-weight:700;color:#EF4444;">Approx 3 days</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="closeSheet('cdg-sheet')">Open Flying Blue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LHR Business sheet -->
+<div class="sheet-overlay" id="lhr-sheet">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-lhr" style="position:relative;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);border-radius:20px;"></div>
+      <div style="position:absolute;bottom:16px;left:20px;right:20px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Etihad Airways · Etihad Guest</div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em;">BOM → LHR</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:4px;">Business Studio</div>
+      </div>
+      <button onclick="closeSheet('lhr-sheet')" style="position:absolute;top:16px;right:16px;width:32px;height:32px;background:rgba(0,0,0,0.5);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div style="font-size:28px;font-weight:900;color:#10B981;letter-spacing:-0.03em;">₹2,40,000</div>
+      <div style="font-size:13px;color:#555;margin-top:2px;margin-bottom:16px;">58,000 pts · ₹1.96/pt</div>
+
+      <div style="background:#1a1a1a;border-radius:16px;overflow:hidden;border:1px solid #2a2a2a;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Program</span>
+          <span style="font-size:13px;font-weight:600;">Etihad Guest</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Transfer ratio (HDFC)</span>
+          <span style="font-size:13px;font-weight:600;color:#10B981;">1:1</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;">
+          <span style="font-size:13px;color:#888;">vs Statement Credit</span>
+          <span style="font-size:13px;font-weight:700;color:#10B981;">+3.9× better</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="closeSheet('lhr-sheet')">Open Etihad Guest →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hotel sheet -->
+<div class="sheet-overlay" id="hotel-sheet">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-maldives" style="position:relative;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);border-radius:20px;"></div>
+      <div style="position:absolute;bottom:16px;left:20px;right:20px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">World of Hyatt</div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em;">Park Hyatt Maldives</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:4px;">Park Panoramic Room · per night</div>
+      </div>
+      <button onclick="closeSheet('hotel-sheet')" style="position:absolute;top:16px;right:16px;width:32px;height:32px;background:rgba(0,0,0,0.5);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="tier-badge tier-elite" style="margin-bottom:12px;">⭐ Highest CPP hotel deal</div>
+      <div style="font-size:28px;font-weight:900;color:#10B981;letter-spacing:-0.03em;">₹95,000</div>
+      <div style="font-size:13px;color:#555;margin-top:2px;margin-bottom:16px;">35,000 pts · ₹2.71/pt</div>
+
+      <div style="background:#1a1a1a;border-radius:16px;overflow:hidden;border:1px solid #2a2a2a;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Program</span>
+          <span style="font-size:13px;font-weight:600;">World of Hyatt</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #222;">
+          <span style="font-size:13px;color:#888;">Category</span>
+          <span style="font-size:13px;font-weight:600;">Cat 8 (35K peak)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 16px;">
+          <span style="font-size:13px;color:#888;">vs cash rate</span>
+          <span style="font-size:13px;font-weight:700;color:#10B981;">Save ₹60,000</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="closeSheet('hotel-sheet')">Open World of Hyatt →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+
+// ── Page switching ──────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+
+  // sync bottom nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+
+  // scroll to top
+  document.getElementById('mainScreen').scrollTop = 0;
+}
+
+function navTo(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  el.classList.add('active');
+
+  // sync demo tabs
+  document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+  const tabEl = document.querySelector(`.demo-tab[onclick="showPage('${name}')"]`);
+  if (tabEl) tabEl.classList.add('active');
+
+  document.getElementById('mainScreen').scrollTop = 0;
+}
+
+// ── Category pill ───────────────────────────────────────────
+function selectCat(el) {
+  el.closest('.pill-scroll, .filter-row').querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Bottom sheets ───────────────────────────────────────────
+function openSheet(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on overlay click
+document.querySelectorAll('.sheet-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+});
+
+// ── Calculator ──────────────────────────────────────────────
+const CPP_MAP = {
+  infinia: { name: 'HDFC Infinia', cash: 0.50, kris: 2.10, aero: 2.04, fb: 1.90, hotel: 0.90 },
+  atlas:   { name: 'Axis Atlas',   cash: 0.42, kris: 1.68, aero: 1.85, fb: 1.52, hotel: 0.70 },
+  amex:    { name: 'Amex Platinum',cash: 0.45, kris: 0.00, aero: 0.00, fb: 0.00, hotel: 0.95 },
+  magnus:  { name: 'Axis Magnus',  cash: 0.42, kris: 1.68, aero: 1.88, fb: 1.92, hotel: 0.80 },
+  hsbc:    { name: 'HSBC Premier', cash: 0.50, kris: 2.10, aero: 0.00, fb: 1.90, hotel: 0.00 },
+};
+let activeCard = 'infinia';
+
+function selectCardChip(el, card) {
+  document.querySelectorAll('.card-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeCard = card;
+  calcUpdate();
+}
+
+function setPoints(n) {
+  document.getElementById('calcInput').value = n;
+  calcUpdate();
+}
+
+function fmtINR(n) {
+  if (n >= 100000) return '₹' + (n/100000).toFixed(1) + 'L';
+  if (n >= 1000) return '₹' + (n/1000).toFixed(0) + 'K';
+  return '₹' + n;
+}
+
+function calcUpdate() {
+  const pts = parseInt(document.getElementById('calcInput').value) || 0;
+  if (pts === 0) {
+    document.getElementById('valueDisplay').classList.remove('show');
+    document.getElementById('resultsSection').style.display = 'none';
+    return;
+  }
+
+  const c = CPP_MAP[activeCard];
+  const krisVal  = Math.floor(pts * c.kris);
+  const aeroVal  = Math.floor(pts * c.aero);
+  const fbVal    = Math.floor(pts * c.fb);
+  const hotelVal = Math.floor(pts * c.hotel);
+  const cashVal  = Math.floor(pts * c.cash);
+  const portalVal = Math.floor(pts * c.cash * 1.3);
+
+  const best = Math.max(krisVal, aeroVal, fbVal, hotelVal);
+  const bestProg = krisVal >= aeroVal && krisVal >= fbVal ? 'KrisFlyer Business' : aeroVal >= fbVal ? 'Aeroplan Business' : 'Flying Blue Economy';
+
+  document.getElementById('bigValue').textContent = fmtINR(best);
+  document.getElementById('bestProg').textContent = bestProg;
+  document.getElementById('multiplierText').textContent = best > 0 ? (best / cashVal).toFixed(1) + '× more than statement credit' : '';
+  document.getElementById('valueDisplay').classList.add('show');
+  document.getElementById('resultsSection').style.display = 'block';
+
+  // Update result rows
+  document.getElementById('r1-val').textContent = fmtINR(krisVal);
+  document.getElementById('r2-val').textContent = fmtINR(aeroVal);
+  document.getElementById('r3-val').textContent = fmtINR(fbVal);
+  document.getElementById('r4-val').textContent = fmtINR(hotelVal);
+
+  // Update baselines
+  document.getElementById('b1-val').textContent = fmtINR(cashVal);
+  document.getElementById('b2-val').textContent = fmtINR(portalVal);
+  document.getElementById('b3-val').textContent = fmtINR(best);
+}
+
+// ── Cards page museum ───────────────────────────────────────
+function selectMuseumCard(el, name, issuer, ratio, best, cash) {
+  document.querySelectorAll('.museum-card').forEach(c => {
+    c.style.outline = 'none';
+    c.style.transform = '';
+  });
+  el.style.outline = '2px solid #10B981';
+  el.style.transform = 'translateY(-4px)';
+
+  document.getElementById('panelName').textContent = name;
+  document.getElementById('panelIssuer').textContent = issuer;
+  document.getElementById('panelBest').textContent = '₹' + best + '/pt';
+  document.getElementById('panelCash').textContent = '₹' + cash + '/pt';
+  document.getElementById('panelMulti').textContent = (parseFloat(best) / parseFloat(cash)).toFixed(1) + '×';
+  document.getElementById('panelRatio').textContent = ratio + ' ratio';
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,346 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────────────────────
+   SweetRedeem.club — Global Styles V3 "Quiet Luxury"
+   Design tokens mirror tailwind.config.ts for use in plain CSS
+────────────────────────────────────────────────────────────── */
+
+/* ── CSS Variables ────────────────────────────────────────── */
+:root {
+  --bg-primary:      #F9F6F0;   /* warm cream canvas */
+  --bg-surface:      #FFFFFF;   /* card surface */
+  --bg-overlay-dark: #121212;   /* dark CTA / overlay */
+  --text-primary:    #000000;
+  --text-secondary:  #666666;
+  --text-on-dark:    #FFFFFF;
+  --accent-gold:     #C5A059;
+  --accent-gold-bg:  #F4ECD8;
+  --status-success:  #00C885;
+  --status-error:    #E03E3E;
+  --status-warn:     #E08A00;
+  --border-subtle:   #EAEAEA;
+  --shadow-card:     0 4px 12px rgba(0,0,0,0.06);
+  --shadow-sheet:    0 -8px 40px rgba(0,0,0,0.12);
+  --radius-card:     16px;
+  --radius-btn:      12px;
+  --radius-pill:     9999px;
+}
+
+/* ── Base Reset ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  /* Subtle bottom-padding so content clears the mobile bottom nav */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Hide scrollbars but keep scroll */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Selection / Focus ─────────────────────────────────────── */
+::selection { background: rgba(0,200,133,0.15); }
+*:focus-visible { outline: 2px solid var(--status-success); outline-offset: 2px; }
+
+/* ── Scrollbar (desktop) ───────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+
+/* ──────────────────────────────────────────────────────────────
+   TYPOGRAPHY UTILITIES
+────────────────────────────────────────────────────────────── */
+@layer utilities {
+
+  /* Tabular numbers — stops jitter on animated counters */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Serif heading (Playfair Display) */
+  .serif {
+    font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+
+  /* Label uppercase tag */
+  .label-tag {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+  }
+
+  /* Mono numeric */
+  .mono-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-weight: 800;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   COMPONENT LAYER
+────────────────────────────────────────────────────────────── */
+@layer components {
+
+  /* ── Surface card ───────────────────────────────────────── */
+  .card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ── Primary dark CTA button ────────────────────────────── */
+  .btn-dark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 20px;
+    border-radius: var(--radius-btn);
+    background: var(--bg-overlay-dark);
+    color: var(--text-on-dark);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    width: 100%;
+  }
+  .btn-dark:hover { opacity: 0.88; }
+  .btn-dark:active { opacity: 0.75; }
+
+  /* ── Green success CTA button ───────────────────────────── */
+  .btn-green {
+    background: var(--status-success);
+    color: #fff;
+  }
+
+  /* ── Pill filter chip ───────────────────────────────────── */
+  .pill {
+    flex-shrink: 0;
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .pill.active, .pill[data-active="true"] {
+    background: var(--bg-overlay-dark);
+    color: var(--text-on-dark);
+    border-color: var(--bg-overlay-dark);
+  }
+
+  /* ── Badge ──────────────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .badge-elite { background: rgba(0,200,133,0.1);  color: #00A86B; border: 1px solid rgba(0,200,133,0.2); }
+  .badge-high  { background: rgba(0,200,133,0.06); color: #00A86B; border: 1px solid rgba(0,200,133,0.15); }
+  .badge-good  { background: rgba(224,138,0,0.08); color: #E08A00; border: 1px solid rgba(224,138,0,0.15); }
+  .badge-poor  { background: rgba(224,62,62,0.08); color: #E03E3E; border: 1px solid rgba(224,62,62,0.15); }
+  .badge-flash { background: rgba(197,160,89,0.12);color: #C5A059; border: 1px solid rgba(197,160,89,0.25); }
+
+  /* ── Points pill (header) ───────────────────────────────── */
+  .pts-pill {
+    background: rgba(0,200,133,0.08);
+    border: 1px solid rgba(0,200,133,0.2);
+    border-radius: var(--radius-pill);
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #00A86B;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* ── Progress bar ───────────────────────────────────────── */
+  .progress-track {
+    height: 4px;
+    background: var(--border-subtle);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--status-success);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Bottom nav (mobile) ────────────────────────────────── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px 4px;
+    z-index: 100;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 20px;
+    border-radius: 12px;
+    border: none;
+    background: none;
+    color: #BBBBBB;
+    transition: color 0.15s;
+    position: relative;
+    text-decoration: none;
+  }
+  .nav-item.active { color: var(--text-primary); }
+  .nav-item .nav-icon { font-size: 1.25rem; line-height: 1; }
+  .nav-item .nav-label { font-size: 0.625rem; font-weight: 600; letter-spacing: 0.02em; }
+  .nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 4px;
+    height: 4px;
+    background: var(--status-success);
+    border-radius: 50%;
+  }
+
+  /* ── Section header row ─────────────────────────────────── */
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    margin: 26px 0 14px;
+  }
+  .section-title { font-size: 1.0625rem; font-weight: 700; color: var(--text-primary); }
+  .see-all { font-size: 0.8125rem; color: var(--status-success); font-weight: 600; cursor: pointer; }
+
+  /* ── Hero destination image gradients ───────────────────── */
+  .dest-sin      { background: linear-gradient(160deg, #0f2027, #203a43, #2c5364); }
+  .dest-cdg      { background: linear-gradient(160deg, #1a1a2e, #16213e, #533483); }
+  .dest-lhr      { background: linear-gradient(160deg, #1c1c1c, #2d1b69, #11998e); }
+  .dest-maldives { background: linear-gradient(160deg, #005c97, #0b8793, #38ef7d); }
+  .dest-yyz      { background: linear-gradient(160deg, #1a1a1a, #243b55, #141e30); }
+  .dest-bkk      { background: linear-gradient(160deg, #360033, #0b8793); }
+
+  /* ── Reward / milestone banner ──────────────────────────── */
+  .reward-banner {
+    border-radius: var(--radius-card);
+    background: linear-gradient(135deg, #E8D5B5 0%, #F4ECD8 50%, #EDD9A3 100%);
+    border: 1px solid rgba(197,160,89,0.3);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    box-shadow: var(--shadow-gold);
+  }
+
+  /* ── Deal card (Roame-style curated) ────────────────────── */
+  .curated-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-bottom: 12px;
+  }
+  .curated-card:active { transform: scale(0.99); }
+
+  /* ── FAQ accordion ──────────────────────────────────────── */
+  .faq-item {
+    background: var(--bg-surface);
+    border-radius: 14px;
+    border: 1px solid var(--border-subtle);
+    overflow: hidden;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  /* ── Stat strip ─────────────────────────────────────────── */
+  .stat-strip {
+    display: flex;
+    background: var(--bg-surface);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-subtle);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .stat-cell {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    border-right: 1px solid var(--border-subtle);
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-val { font-size: 1.25rem; font-weight: 800; color: var(--status-success); }
+  .stat-lbl { font-size: 0.625rem; color: var(--text-secondary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+  /* ── Avatar ─────────────────────────────────────────────── */
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-gold), #E8D5B5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: #5A3A00;
+    border: 2px solid var(--bg-surface);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+}

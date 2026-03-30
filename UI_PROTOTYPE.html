@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maximize — UI Design Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & Tokens ──────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:       #0D0D0D;
+    --surface:  #141414;
+    --raised:   #1C1C1C;
+    --subtle:   #222222;
+    --purple:   #7C3AED;
+    --purple-l: #8B5CF6;
+    --emerald:  #10B981;
+    --emerald-l:#34D399;
+    --red:      #EF4444;
+    --orange:   #F97316;
+    --amber:    #FBBF24;
+    --txt:      #FFFFFF;
+    --txt-2:    #9CA3AF;
+    --txt-3:    #4B5563;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'Manrope', sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--txt);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.028) 1px, transparent 1px);
+    background-size: 28px 28px;
+    min-height: 100vh;
+  }
+  ::selection { background: rgba(124,58,237,.25); }
+
+  /* ── Typography ──────────────────────────────────────── */
+  .hero-num { font-size: 56px; font-weight: 800; letter-spacing: -0.04em; font-family: var(--mono); line-height: 1; }
+  .display  { font-size: 38px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+  .h2       { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  .h3       { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .label    { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--purple); }
+  .caption  { font-size: 11px; color: var(--txt-3); }
+  .mono     { font-family: var(--mono); }
+
+  /* ── Gradients ───────────────────────────────────────── */
+  .grad-purple  { background: linear-gradient(135deg,#8B5CF6,#7C3AED,#6D28D9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .grad-emerald { background: linear-gradient(135deg,#34D399,#10B981); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .grad-white   { background: linear-gradient(135deg,#fff,rgba(255,255,255,.65)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+  /* ── Layout ──────────────────────────────────────────── */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  .section   { padding: 64px 0; }
+  .section + .section { border-top: 1px solid var(--subtle); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+
+  /* ── Cards ───────────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--subtle);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.03);
+    transition: border-color .2s, transform .1s, box-shadow .1s;
+  }
+  .card:hover { border-color: rgba(124,58,237,.25); box-shadow: 0 4px 20px rgba(0,0,0,.7), 0 0 0 1px rgba(124,58,237,.15); }
+  .card-neopop {
+    background: var(--surface);
+    border: 1px solid var(--subtle);
+    border-radius: 8px;
+    box-shadow: 4px 4px 0 #000;
+    transition: transform .09s, box-shadow .09s, border-color .15s;
+  }
+  .card-neopop:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #000; border-color: rgba(124,58,237,.3); }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .btn-purple {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 24px; font-family: var(--sans); font-weight: 700; font-size: 14px;
+    color: #fff; background: var(--purple);
+    border: 1px solid var(--purple-l); border-radius: 4px;
+    box-shadow: 4px 4px 0 #000; cursor: pointer;
+    transition: transform .09s, box-shadow .09s; letter-spacing: .02em;
+    text-decoration: none;
+  }
+  .btn-purple:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #000; }
+  .btn-purple:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #000; }
+  .btn-emerald {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 24px; font-family: var(--sans); font-weight: 700; font-size: 14px;
+    color: #0D0D0D; background: var(--emerald);
+    border: 1px solid var(--emerald-l); border-radius: 4px;
+    box-shadow: 4px 4px 0 #000; cursor: pointer;
+    transition: transform .09s, box-shadow .09s;
+    text-decoration: none;
+  }
+  .btn-emerald:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #000; }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 20px; font-family: var(--sans); font-weight: 600; font-size: 13px;
+    color: var(--txt-2); background: transparent;
+    border: 1px solid var(--subtle); border-radius: 4px; cursor: pointer;
+    transition: border-color .15s, color .15s;
+    text-decoration: none;
+  }
+  .btn-ghost:hover { border-color: var(--purple); color: #fff; }
+
+  /* ── Inputs ──────────────────────────────────────────── */
+  .input {
+    width: 100%; padding: 16px 18px; font-family: var(--sans); font-weight: 700; font-size: 16px;
+    color: #fff; background: var(--raised);
+    border: 1px solid var(--subtle); border-bottom: 2px solid var(--purple);
+    border-radius: 4px 4px 0 0; outline: none;
+    transition: border-bottom-color .15s;
+  }
+  .input:focus { border-bottom-color: var(--emerald); }
+  .input::placeholder { color: var(--txt-3); font-weight: 500; }
+  select.input { cursor: pointer; appearance: none; }
+
+  /* ── Pills ───────────────────────────────────────────── */
+  .pill {
+    padding: 7px 16px; font-size: 12px; font-weight: 700;
+    border: 1px solid var(--subtle); border-radius: 100px;
+    color: var(--txt-2); background: var(--surface);
+    cursor: pointer; transition: all .12s; box-shadow: 2px 2px 0 #000;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pill:hover { border-color: var(--purple); color: #fff; }
+  .pill.active { background: var(--purple); border-color: var(--purple-l); color: #fff; }
+
+  /* ── Value bars ──────────────────────────────────────── */
+  .bar-row { padding: 12px 16px; border-radius: 6px; margin-bottom: 8px; }
+  .bar-track { height: 4px; background: var(--subtle); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .bar-fill  { height: 100%; border-radius: 2px; transition: width 1s cubic-bezier(.16,1,.3,1); }
+
+  /* ── Nav ─────────────────────────────────────────────── */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    border-bottom: 1px solid var(--subtle);
+    background: rgba(13,13,13,.88);
+    backdrop-filter: blur(12px);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .wordmark { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .wordmark-icon {
+    width: 28px; height: 28px; border-radius: 4px; background: var(--purple);
+    box-shadow: 2px 2px 0 #000; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff;
+  }
+  .wordmark-text { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -.01em; }
+  .nav-links { display: flex; align-items: center; gap: 4px; }
+  .nav-link { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--txt-2); text-decoration: none; transition: color .15s, background .15s; }
+  .nav-link:hover { color: #fff; background: var(--raised); }
+  .nav-link.active { color: #fff; }
+
+  /* ── Badge ───────────────────────────────────────────── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700;
+  }
+
+  /* ── Deal card (Roame-style) ─────────────────────────── */
+  .deal-card { border-radius: 12px; overflow: hidden; box-shadow: 4px 4px 0 #000; cursor: pointer; transition: transform .1s, box-shadow .1s; }
+  .deal-card:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #000; }
+  .deal-card-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 60px; position: relative; }
+  .deal-card-body { background: var(--surface); border: 1px solid var(--subtle); border-top: none; padding: 14px 16px; }
+
+  /* ── Section page tabs ───────────────────────────────── */
+  .page-tab { padding: 10px 20px; font-size: 13px; font-weight: 700; background: none; border: none; color: var(--txt-3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+  .page-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+  /* ── Scrollbar ───────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--subtle); border-radius: 3px; }
+
+  /* ── Frosted glass ───────────────────────────────────── */
+  .glass { backdrop-filter: blur(12px) saturate(.6); background: rgba(13,13,13,.7); border: 1px solid rgba(124,58,237,.2); }
+
+  /* ── Credit card visual ──────────────────────────────── */
+  .cc-card {
+    border-radius: 14px; padding: 22px; position: relative; overflow: hidden;
+    box-shadow: 6px 6px 0 #000; aspect-ratio: 1.586; display: flex; flex-direction: column; justify-content: space-between;
+    cursor: default; transition: transform .1s;
+  }
+  .cc-card:hover { transform: translateY(-4px); }
+
+  /* ── Divider ─────────────────────────────────────────── */
+  hr { border: none; height: 1px; background: linear-gradient(90deg,transparent,var(--subtle),transparent); margin: 0; }
+
+  /* ── Marquee ─────────────────────────────────────────── */
+  @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+  .marquee-track { display: flex; gap: 12px; width: max-content; animation: marquee 32s linear infinite; }
+
+  /* ── Animations ──────────────────────────────────────── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+  @keyframes ticker { from { opacity:0; transform:translateY(10px) scale(.96) } to { opacity:1; transform:translateY(0) scale(1) } }
+  .fade-up { animation: fadeUp .5s cubic-bezier(.16,1,.3,1) forwards; }
+  .ticker  { animation: ticker .7s cubic-bezier(.16,1,.3,1) forwards; }
+
+  /* ── Transfer tier table ─────────────────────────────── */
+  .tier-table { width: 100%; border-collapse: collapse; }
+  .tier-table th { text-align: left; font-size: 11px; font-weight: 700; color: var(--txt-3); text-transform: uppercase; letter-spacing: .08em; padding: 0 12px 10px; border-bottom: 1px solid var(--subtle); }
+  .tier-table td { padding: 12px; border-bottom: 1px solid var(--raised); font-size: 13px; vertical-align: middle; }
+  .tier-table tr:last-child td { border-bottom: none; }
+  .tier-table tr:hover td { background: var(--raised); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  NAV                                                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#home" class="wordmark">
+      <div class="wordmark-icon">M</div>
+      <span class="wordmark-text">Maximize</span>
+    </a>
+    <div class="nav-links">
+      <a href="#home" class="nav-link active">Home</a>
+      <a href="#discover" class="nav-link">Discover</a>
+      <a href="#cards" class="nav-link">Cards</a>
+      <a href="#calculator" class="nav-link">Calculator</a>
+    </div>
+    <a href="#calculator" class="btn-purple" style="font-size:12px;padding:8px 16px;">Try Free →</a>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  PAGE 1: HOME — Section A: Hero Calculator                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="home">
+<section class="section" style="padding-top:80px;">
+  <div class="container">
+
+    <!-- Eyebrow -->
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid rgba(124,58,237,.25);border-radius:100px;background:rgba(124,58,237,.06);margin-bottom:28px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--purple);animation:pulse 2s infinite;"></span>
+      <span style="font-size:11px;font-weight:700;color:var(--purple-l);letter-spacing:.08em;text-transform:uppercase;">India's first points maximiser</span>
+    </div>
+
+    <div class="grid-2" style="gap:40px;align-items:center;">
+      <!-- Left: Headline -->
+      <div>
+        <h1 class="display" style="margin-bottom:16px;">
+          Your points are worth<br>
+          <span class="grad-emerald">3× more</span><br>
+          than your bank admits.
+        </h1>
+        <p style="font-size:15px;color:var(--txt-2);line-height:1.7;max-width:400px;">
+          HDFC Infinia, Axis Atlas, Amex — every premium card has transfer partners that unlock dramatically more value. We show you exactly where.
+        </p>
+        <div style="display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;">
+          <a href="#calculator" class="btn-purple">⚡ Calculate My Value</a>
+          <a href="#discover" class="btn-ghost">Browse Deals →</a>
+        </div>
+
+        <!-- Mini stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,auto);gap:24px;margin-top:36px;padding-top:28px;border-top:1px solid var(--subtle);width:fit-content;">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--emerald);font-family:var(--mono);">14</div>
+            <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Cards</div>
+          </div>
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--emerald);font-family:var(--mono);">93</div>
+            <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Routes</div>
+          </div>
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--emerald);font-family:var(--mono);">3.2×</div>
+            <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Avg uplift</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Calculator widget -->
+      <div id="calculator">
+        <div style="background:var(--surface);border:1px solid var(--subtle);border-radius:12px;padding:24px;box-shadow:6px 6px 0 #000;">
+          <p class="label" style="margin-bottom:18px;">True Value Calculator</p>
+
+          <!-- Card select -->
+          <div style="margin-bottom:14px;">
+            <p class="label" style="font-size:10px;margin-bottom:6px;">Select Card</p>
+            <div style="position:relative;">
+              <select class="input" style="font-size:15px;padding-right:40px;" id="cardSelect" onchange="updateCalc()">
+                <option value="">Choose your card…</option>
+                <optgroup label="HDFC Bank">
+                  <option value="infinia" data-cpp="0.5">HDFC Infinia</option>
+                  <option value="dcb" data-cpp="0.5">HDFC Diners Club Black</option>
+                </optgroup>
+                <optgroup label="Axis Bank">
+                  <option value="atlas" data-cpp="0.2">Axis Atlas</option>
+                  <option value="olympus" data-cpp="0.2">Axis Olympus</option>
+                </optgroup>
+                <optgroup label="American Express">
+                  <option value="amex" data-cpp="0.25">Amex Platinum Travel</option>
+                </optgroup>
+                <optgroup label="HSBC">
+                  <option value="hsbc" data-cpp="0.25">HSBC Premier</option>
+                </optgroup>
+              </select>
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--txt-3);">▾</span>
+            </div>
+          </div>
+
+          <!-- Points input -->
+          <div style="margin-bottom:14px;">
+            <p class="label" style="font-size:10px;margin-bottom:6px;">Your Balance</p>
+            <div style="position:relative;">
+              <input type="text" id="pointsInput" class="input mono" style="font-size:20px;letter-spacing:.02em;" placeholder="1,00,000" oninput="formatPoints(this); updateCalc()">
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--txt-3);font-weight:700;" id="currencyLabel">Points</span>
+            </div>
+            <!-- Quick chips -->
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+              <button class="pill" style="font-size:11px;padding:4px 10px;font-family:var(--mono);" onclick="setPoints(10000)">10,000</button>
+              <button class="pill" style="font-size:11px;padding:4px 10px;font-family:var(--mono);" onclick="setPoints(50000)">50,000</button>
+              <button class="pill" style="font-size:11px;padding:4px 10px;font-family:var(--mono);" onclick="setPoints(100000)">1,00,000</button>
+              <button class="pill" style="font-size:11px;padding:4px 10px;font-family:var(--mono);" onclick="setPoints(500000)">5,00,000</button>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <button class="btn-purple" style="width:100%;font-size:14px;padding:16px;" onclick="runCalc()">
+            ⚡ Calculate True Value
+          </button>
+
+          <!-- Result (shown after calc) -->
+          <div id="calcResult" style="display:none;margin-top:18px;padding:20px;background:#0D2818;border:1px solid rgba(16,185,129,.3);border-radius:8px;box-shadow:4px 4px 0 #000;" class="ticker">
+            <p class="label" style="color:var(--emerald);font-size:10px;margin-bottom:6px;">Your points are worth up to</p>
+            <div class="hero-num grad-emerald" id="resultValue">₹2.0L</div>
+            <p style="font-size:12px;color:var(--txt-2);margin-top:8px;" id="resultSubtext">
+              via <strong style="color:#fff;">KrisFlyer Business</strong> — vs only <strong style="color:var(--red);">₹50K</strong> as statement credit
+            </p>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:26px;font-weight:800;color:var(--emerald);font-family:var(--mono);" id="resultMult">4.0×</span>
+              <span style="font-size:12px;color:var(--txt-2);">better than your bank's portal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section B: Value Comparison ─────────────────────────── -->
+<section class="section" id="comparison">
+  <div class="container">
+    <div class="grid-2" style="gap:48px;align-items:start;">
+      <div>
+        <p class="label" style="margin-bottom:8px;">Value breakdown</p>
+        <h2 class="h2" style="margin-bottom:6px;">
+          Where your <span class="grad-emerald">1L points</span> really go
+        </h2>
+        <p style="font-size:14px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;">
+          Your bank quietly hands you the worst deal. We show you every option — ranked.
+        </p>
+
+        <!-- Bars -->
+        <div>
+          <div class="bar-row" style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="h3" style="font-size:13px;color:#fff;">Statement Credit</div>
+                <div class="caption">Cash back to account</div>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:var(--red);font-family:var(--mono);">₹50K</div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:25%;background:var(--red);"></div></div>
+          </div>
+
+          <div class="bar-row" style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.15);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="h3" style="font-size:13px;color:#fff;">Amazon / Vouchers</div>
+                <div class="caption">Gift card redemption</div>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:var(--orange);font-family:var(--mono);">₹42K</div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:21%;background:var(--orange);"></div></div>
+          </div>
+
+          <div class="bar-row" style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="h3" style="font-size:13px;color:#fff;">Bank Travel Portal</div>
+                <div class="caption">Flights via SmartBuy / EDGE</div>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:var(--amber);font-family:var(--mono);">₹40K</div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--amber);"></div></div>
+          </div>
+
+          <div class="bar-row" style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="h3" style="font-size:13px;color:#fff;">Economy via Transfer</div>
+                <div class="caption">KrisFlyer / Aeroplan award</div>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:var(--emerald-l);font-family:var(--mono);">₹1.1L</div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:55%;background:var(--emerald-l);"></div></div>
+          </div>
+
+          <div class="bar-row" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.3);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="h3" style="font-size:13px;color:#fff;">Business via Transfer ✦</div>
+                <div class="caption" style="color:var(--emerald);">Maximum value redemption</div>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:var(--emerald);font-family:var(--mono);">₹2.2L</div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--emerald);"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section C: Partner Marquee -->
+      <div>
+        <p class="label" style="margin-bottom:8px;">Transfer Partners</p>
+        <h2 class="h2" style="margin-bottom:16px;">
+          12 programs.<br><span class="grad-purple">One place.</span>
+        </h2>
+        <p style="font-size:14px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;">
+          Every major airline and hotel loyalty program connected to Indian cards — mapped, verified, and ranked by value.
+        </p>
+        <!-- Marquee -->
+        <div style="overflow:hidden;position:relative;">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:60px;background:linear-gradient(90deg,#0D0D0D,transparent);z-index:2;pointer-events:none;"></div>
+          <div style="position:absolute;right:0;top:0;bottom:0;width:60px;background:linear-gradient(270deg,#0D0D0D,transparent);z-index:2;pointer-events:none;"></div>
+          <div class="marquee-track">
+            <span class="pill">🇸🇬 KrisFlyer</span>
+            <span class="pill">🇫🇷 Flying Blue</span>
+            <span class="pill">🇨🇦 Aeroplan</span>
+            <span class="pill">🇬🇧 Avios</span>
+            <span class="pill">🇺🇸 United MileagePlus</span>
+            <span class="pill">🏨 Marriott Bonvoy</span>
+            <span class="pill">🏨 World of Hyatt</span>
+            <span class="pill">🇦🇪 Etihad Guest</span>
+            <span class="pill">🇶🇦 Qatar Privilege</span>
+            <span class="pill">🇭🇰 Asia Miles</span>
+            <span class="pill">🏨 Accor ALL</span>
+            <span class="pill">🏨 Hilton Honors</span>
+            <!-- duplicate for loop -->
+            <span class="pill">🇸🇬 KrisFlyer</span>
+            <span class="pill">🇫🇷 Flying Blue</span>
+            <span class="pill">🇨🇦 Aeroplan</span>
+            <span class="pill">🇬🇧 Avios</span>
+            <span class="pill">🇺🇸 United MileagePlus</span>
+            <span class="pill">🏨 Marriott Bonvoy</span>
+            <span class="pill">🏨 World of Hyatt</span>
+            <span class="pill">🇦🇪 Etihad Guest</span>
+            <span class="pill">🇶🇦 Qatar Privilege</span>
+            <span class="pill">🇭🇰 Asia Miles</span>
+            <span class="pill">🏨 Accor ALL</span>
+            <span class="pill">🏨 Hilton Honors</span>
+          </div>
+        </div>
+
+        <!-- Section D: Deal of the Day -->
+        <div style="margin-top:28px;">
+          <p class="label" style="margin-bottom:10px;">Deal of the Day</p>
+          <div style="position:relative;border-radius:12px;overflow:hidden;box-shadow:4px 4px 0 #000;">
+            <!-- Image strip -->
+            <div style="height:120px;background:linear-gradient(135deg,#1a1032,#2d1b69,#1a3a5c);display:flex;align-items:center;justify-content:center;font-size:52px;position:relative;">
+              🗼
+              <span style="position:absolute;top:10px;right:10px;padding:3px 10px;background:var(--purple);border-radius:100px;font-size:10px;font-weight:800;box-shadow:2px 2px 0 #000;letter-spacing:.06em;">BUSINESS</span>
+            </div>
+            <!-- Body -->
+            <div style="background:var(--surface);border:1px solid var(--subtle);border-top:none;padding:14px 16px;">
+              <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;">DEL → CDG</div>
+              <div style="font-size:12px;color:var(--txt-2);">Delhi to Paris — Business Class</div>
+              <!-- Blurred numbers -->
+              <div style="display:flex;gap:20px;margin-top:12px;filter:blur(8px);user-select:none;">
+                <div>
+                  <div style="font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.08em;">Points</div>
+                  <div style="font-size:18px;font-weight:800;color:var(--emerald);font-family:var(--mono);">55,000</div>
+                </div>
+                <div>
+                  <div style="font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.08em;">Worth</div>
+                  <div style="font-size:18px;font-weight:800;color:var(--emerald);font-family:var(--mono);">₹2.4L</div>
+                </div>
+              </div>
+            </div>
+            <!-- Frosted lock overlay -->
+            <div style="position:absolute;inset:0;backdrop-filter:blur(8px);background:rgba(13,13,13,.65);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;border:1px solid rgba(124,58,237,.2);border-radius:12px;">
+              <div style="font-size:24px;margin-bottom:6px;">🔒</div>
+              <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:4px;text-align:center;">Unlock with your phone</div>
+              <div style="font-size:11px;color:var(--txt-2);margin-bottom:16px;text-align:center;">No spam, ever. Takes 10 seconds.</div>
+              <div style="display:flex;gap:8px;width:100%;max-width:260px;">
+                <input type="tel" placeholder="+91 Phone" style="flex:1;padding:10px 12px;background:#0D0D0D;border:1px solid var(--purple);border-radius:4px;color:#fff;font-size:13px;font-weight:700;outline:none;font-family:var(--mono);">
+                <button class="btn-purple" style="font-size:12px;padding:10px 14px;white-space:nowrap;">Get OTP →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section E: Newsletter ────────────────────────────────── -->
+<section style="background:var(--surface);border-top:1px solid var(--subtle);border-bottom:1px solid var(--subtle);padding:48px 0;">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    <div>
+      <div class="label" style="margin-bottom:6px;">Stay ahead</div>
+      <h3 class="h3">Don't miss the next devaluation.</h3>
+      <p style="font-size:13px;color:var(--txt-2);margin-top:4px;">Sweet spots + ratio changes, straight to your inbox. Weekly.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <input type="email" placeholder="your@email.com" style="padding:12px 16px;background:var(--raised);border:1px solid var(--subtle);border-radius:4px;color:#fff;font-size:14px;font-weight:600;outline:none;min-width:220px;font-family:var(--sans);">
+      <button class="btn-emerald" style="font-size:13px;padding:12px 20px;white-space:nowrap;">Subscribe →</button>
+    </div>
+  </div>
+</section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  PAGE 2: DISCOVER                                           -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="discover">
+<section class="section">
+  <div class="container">
+    <div style="margin-bottom:28px;">
+      <p class="label" style="margin-bottom:8px;">Discover</p>
+      <h1 class="display" style="margin-bottom:10px;">Unbeatable <span class="grad-purple">Redemption Deals</span></h1>
+      <p style="font-size:14px;color:var(--txt-2);">Manually curated. Verified monthly. Sorted by value.</p>
+    </div>
+
+    <!-- Filter bar -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--subtle);">
+      <button class="pill active">All</button>
+      <button class="pill">🌍 Europe</button>
+      <button class="pill">🇦🇪 UAE</button>
+      <button class="pill">🌏 Asia</button>
+      <button class="pill">🌎 Americas</button>
+      <div style="width:1px;height:24px;background:var(--subtle);margin:0 4px;"></div>
+      <button class="pill">Business Class</button>
+      <button class="pill">Economy</button>
+      <button class="pill">Hotel</button>
+      <div style="width:1px;height:24px;background:var(--subtle);margin:0 4px;"></div>
+      <button class="pill" style="border-color:var(--purple-l);color:var(--purple-l);">⚡ My Cards Only</button>
+    </div>
+
+    <!-- Deal grid (masonry-ish) -->
+    <div class="grid-3">
+
+      <!-- Deal card 1 — Singapore Business -->
+      <div class="deal-card card-neopop">
+        <div class="deal-card-img" style="background:linear-gradient(135deg,#0c2340,#1a5276,#0d4a3a);">
+          ✈️🌊
+          <span style="position:absolute;top:10px;left:10px;padding:3px 10px;background:var(--emerald);color:#0D0D0D;border-radius:100px;font-size:10px;font-weight:800;box-shadow:2px 2px 0 #000;">BEST VALUE</span>
+          <span style="position:absolute;top:10px;right:10px;padding:3px 10px;background:#0D0D0D;border:1px solid var(--subtle);border-radius:100px;font-size:10px;font-weight:700;color:var(--txt-2);">Business</span>
+        </div>
+        <div class="deal-card-body">
+          <div style="font-size:16px;font-weight:800;letter-spacing:-.01em;">BOM → SIN</div>
+          <div style="font-size:11px;color:var(--txt-2);margin-bottom:10px;">Singapore Airlines Business Saver</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+            <span style="font-size:20px;font-weight:800;color:var(--emerald);font-family:var(--mono);">35,000</span>
+            <span style="font-size:12px;color:var(--txt-2);">pts + ₹3,500</span>
+          </div>
+          <div style="font-size:12px;color:var(--txt-3);text-decoration:line-through;margin-bottom:10px;">Cash: ₹65,000</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+            <span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald);border:1px solid rgba(16,185,129,.2);">KrisFlyer</span>
+            <span class="badge" style="background:rgba(124,58,237,.1);color:var(--purple-l);border:1px solid rgba(124,58,237,.2);">HDFC Infinia</span>
+          </div>
+          <button class="btn-emerald" style="width:100%;font-size:12px;padding:10px;">Book This Deal →</button>
+        </div>
+      </div>
+
+      <!-- Deal card 2 — Paris Business (LOCKED) -->
+      <div class="deal-card" style="position:relative;box-shadow:4px 4px 0 #000;">
+        <div class="deal-card-img" style="background:linear-gradient(135deg,#1a1032,#2d1b69,#1a3a5c);">
+          🗼
+          <span style="position:absolute;top:10px;right:10px;padding:3px 10px;background:var(--purple);border-radius:100px;font-size:10px;font-weight:800;color:#fff;box-shadow:2px 2px 0 #000;">PREMIUM 🔒</span>
+        </div>
+        <div class="deal-card-body">
+          <div style="font-size:16px;font-weight:800;">DEL → CDG</div>
+          <div style="font-size:11px;color:var(--txt-2);margin-bottom:10px;">Air France Business Class</div>
+          <div style="filter:blur(8px);user-select:none;">
+            <div style="font-size:20px;font-weight:800;color:var(--emerald);font-family:var(--mono);">55,000 pts</div>
+            <div style="font-size:12px;color:var(--txt-3);text-decoration:line-through;">Cash: ₹2,40,000</div>
+          </div>
+          <button class="btn-purple" style="width:100%;font-size:12px;padding:10px;margin-top:12px;">🔓 Login to Reveal</button>
+        </div>
+      </div>
+
+      <!-- Deal card 3 — Maldives Hotel -->
+      <div class="deal-card card-neopop">
+        <div class="deal-card-img" style="background:linear-gradient(135deg,#0a4060,#0d7a8a,#1a6655);">
+          🏝️
+          <span style="position:absolute;top:10px;left:10px;padding:3px 10px;background:#FBBF24;color:#0D0D0D;border-radius:100px;font-size:10px;font-weight:800;box-shadow:2px 2px 0 #000;">HOTEL</span>
+        </div>
+        <div class="deal-card-body">
+          <div style="font-size:16px;font-weight:800;">Ritz-Carlton Maldives</div>
+          <div style="font-size:11px;color:var(--txt-2);margin-bottom:10px;">Water Villa — Peak Season</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+            <span style="font-size:20px;font-weight:800;color:var(--emerald);font-family:var(--mono);">60,000</span>
+            <span style="font-size:12px;color:var(--txt-2);">pts/night</span>
+          </div>
+          <div style="font-size:12px;color:var(--txt-3);text-decoration:line-through;margin-bottom:10px;">Cash: ₹1,10,000/night</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+            <span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald);border:1px solid rgba(16,185,129,.2);">Marriott Bonvoy</span>
+          </div>
+          <button class="btn-emerald" style="width:100%;font-size:12px;padding:10px;">Book This Deal →</button>
+        </div>
+      </div>
+
+      <!-- Deal card 4 -->
+      <div class="deal-card card-neopop">
+        <div class="deal-card-img" style="background:linear-gradient(135deg,#2d1b00,#7c3a00,#4a1c00);">
+          🍁
+        </div>
+        <div class="deal-card-body">
+          <div style="font-size:16px;font-weight:800;">BOM → YYZ</div>
+          <div style="font-size:11px;color:var(--txt-2);margin-bottom:10px;">Aeroplan — No Fuel Surcharges</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+            <span style="font-size:20px;font-weight:800;color:var(--emerald);font-family:var(--mono);">70,000</span>
+            <span style="font-size:12px;color:var(--txt-2);">pts + ₹8,000</span>
+          </div>
+          <div style="font-size:12px;color:var(--txt-3);text-decoration:line-through;margin-bottom:10px;">Cash: ₹2,50,000</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+            <span class="badge" style="background:rgba(124,58,237,.1);color:var(--purple-l);border:1px solid rgba(124,58,237,.2);">Aeroplan</span>
+            <span class="badge" style="background:rgba(124,58,237,.1);color:var(--purple-l);border:1px solid rgba(124,58,237,.2);">Axis Olympus</span>
+          </div>
+          <button class="btn-emerald" style="width:100%;font-size:12px;padding:10px;">Book This Deal →</button>
+        </div>
+      </div>
+
+      <!-- Deal card 5 -->
+      <div class="deal-card card-neopop">
+        <div class="deal-card-img" style="background:linear-gradient(135deg,#0d2636,#1a4a6b,#0d3d3d);">
+          🇦🇪
+        </div>
+        <div class="deal-card-body">
+          <div style="font-size:16px;font-weight:800;">BOM → AUH → LHR</div>
+          <div style="font-size:11px;color:var(--txt-2);margin-bottom:10px;">Etihad Business Studio</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+            <span style="font-size:20px;font-weight:800;color:var(--emerald);font-family:var(--mono);">58,000</span>
+            <span style="font-size:12px;color:var(--txt-2);">pts + taxes</span>
+          </div>
+          <div style="font-size:12px;color:var(--txt-3);text-decoration:line-through;margin-bottom:10px;">Cash: ₹2,40,000</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+            <span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald);border:1px solid rgba(16,185,129,.2);">Etihad Guest</span>
+          </div>
+          <button class="btn-emerald" style="width:100%;font-size:12px;padding:10px;">Book This Deal →</button>
+        </div>
+      </div>
+
+      <!-- Deal card 6 — Hyatt India -->
+      <div class="deal-card card-neopop">
+        <div class="deal-card-img" style="background:linear-gradient(135deg,#2d1a00,#6b3a12,#4a2a0d);">
+          🏔️
+        </div>
+        <div class="deal-card-body">
+          <div style="font-size:16px;font-weight:800;">Hyatt Regency Dehradun</div>
+          <div style="font-size:11px;color:var(--txt-2);margin-bottom:10px;">Standard Room — India's best Hyatt</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+            <span style="font-size:20px;font-weight:800;color:var(--emerald);font-family:var(--mono);">17,000</span>
+            <span style="font-size:12px;color:var(--txt-2);">pts/night</span>
+          </div>
+          <div style="font-size:12px;color:var(--txt-3);text-decoration:line-through;margin-bottom:10px;">Cash: ₹25,000/night</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+            <span class="badge" style="background:rgba(124,58,237,.1);color:var(--purple-l);border:1px solid rgba(124,58,237,.2);">World of Hyatt</span>
+          </div>
+          <button class="btn-emerald" style="width:100%;font-size:12px;padding:10px;">Book This Deal →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  PAGE 3: CREDIT CARDS                                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="cards">
+<section class="section">
+  <div class="container">
+    <p class="label" style="margin-bottom:8px;">Strategy Engine</p>
+    <h1 class="display" style="margin-bottom:10px;">Credit <span class="grad-purple">Cards</span></h1>
+    <p style="font-size:14px;color:var(--txt-2);margin-bottom:36px;">Your arsenal, optimized. See every card's true potential and how they work together.</p>
+
+    <!-- Section A: Card Arsenal -->
+    <h2 class="h3" style="margin-bottom:16px;color:var(--txt-2);font-size:14px;text-transform:uppercase;letter-spacing:.08em;">Your Current Arsenal</h2>
+    <div class="grid-3" style="margin-bottom:48px;">
+      <!-- HDFC Infinia card visual -->
+      <div class="cc-card" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;">HDFC Bank</div>
+          <div style="font-size:17px;font-weight:800;color:#fff;margin-top:4px;letter-spacing:-.01em;">Infinia Metal</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px;">Balance</div>
+          <div style="font-size:22px;font-weight:800;color:var(--emerald);font-family:var(--mono);">1,20,000</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;">Reward Points · Expires Mar 2026</div>
+        </div>
+        <div style="position:absolute;top:16px;right:16px;width:36px;height:28px;background:linear-gradient(135deg,#d4af37,#f5d16a);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#0D0D0D;">VISA</div>
+      </div>
+
+      <!-- Axis Atlas card visual -->
+      <div class="cc-card" style="background:linear-gradient(135deg,#0d1b2a 0%,#1b4332 50%,#081c15 100%);">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;">Axis Bank</div>
+          <div style="font-size:17px;font-weight:800;color:#fff;margin-top:4px;">Atlas</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px;">Balance</div>
+          <div style="font-size:22px;font-weight:800;color:var(--emerald);font-family:var(--mono);">45,000</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;">EDGE Miles · Expires Jun 2026</div>
+        </div>
+        <div style="position:absolute;top:16px;right:16px;width:36px;height:28px;background:linear-gradient(135deg,#c0c0c0,#e8e8e8);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#0D0D0D;">MC</div>
+      </div>
+
+      <!-- Add card tile -->
+      <div style="border:1px dashed var(--subtle);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:border-color .15s;min-height:160px;">
+        <div style="width:40px;height:40px;border-radius:100%;background:var(--raised);border:1px solid var(--subtle);display:flex;align-items:center;justify-content:center;font-size:20px;">+</div>
+        <div style="font-size:13px;font-weight:700;color:var(--txt-3);">Add a card</div>
+      </div>
+    </div>
+
+    <!-- Section B: Optimizer -->
+    <div style="margin-bottom:48px;">
+      <h2 class="h3" style="margin-bottom:16px;color:var(--txt-2);font-size:14px;text-transform:uppercase;letter-spacing:.08em;">Maximize Rewards</h2>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+
+        <div class="card-neopop" style="padding:20px;display:flex;align-items:center;gap:16px;border-left:3px solid var(--emerald);">
+          <div style="font-size:32px;flex-shrink:0;">💡</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:#fff;">Your HDFC Infinia is great for flights via KrisFlyer</div>
+            <div style="font-size:12px;color:var(--txt-2);margin-top:4px;line-height:1.5;">
+              Your 1,20,000 RP → 1,20,000 KrisFlyer Miles → worth up to <span style="color:var(--emerald);font-weight:700;">₹2.64L</span> in Business Class. You're using them for statement credit at ₹60K. That's a <span style="color:var(--red);font-weight:700;">₹2.04L mistake</span>.
+            </div>
+          </div>
+          <button class="btn-emerald" style="font-size:12px;padding:10px 16px;white-space:nowrap;flex-shrink:0;">Fix This →</button>
+        </div>
+
+        <div class="card-neopop" style="padding:20px;display:flex;align-items:center;gap:16px;border-left:3px solid var(--purple);">
+          <div style="font-size:32px;flex-shrink:0;">🏨</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:#fff;">Weak on hotel redemptions — consider adding Amex</div>
+            <div style="font-size:12px;color:var(--txt-2);margin-top:4px;line-height:1.5;">
+              Your wallet has no direct Marriott Bonvoy or Hyatt access. Amex Platinum Travel transfers 1:1 to Marriott — the best hotel ratio in India.
+            </div>
+          </div>
+          <button class="btn-ghost" style="font-size:12px;padding:10px 16px;white-space:nowrap;flex-shrink:0;">Learn More</button>
+        </div>
+
+        <div class="card-neopop" style="padding:20px;display:flex;align-items:center;gap:16px;border-left:3px solid var(--amber);">
+          <div style="font-size:32px;flex-shrink:0;">⏰</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:#fff;">Axis Atlas expiry in 3 months — act now</div>
+            <div style="font-size:12px;color:var(--txt-2);margin-top:4px;">
+              45,000 EDGE Miles expiring Jun 2026. Transfer to Flying Blue today to preserve them.
+            </div>
+          </div>
+          <button class="btn-purple" style="font-size:12px;padding:10px 16px;white-space:nowrap;flex-shrink:0;">Transfer Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section C: Transfer Ratio Table -->
+    <div>
+      <h2 class="h3" style="margin-bottom:16px;color:var(--txt-2);font-size:14px;text-transform:uppercase;letter-spacing:.08em;">Tier List & Transfer Ratios</h2>
+      <div style="background:var(--surface);border:1px solid var(--subtle);border-radius:10px;overflow:hidden;">
+        <!-- Search -->
+        <div style="padding:12px 16px;border-bottom:1px solid var(--subtle);">
+          <input type="text" placeholder="Search card or program…" style="width:100%;background:var(--raised);border:1px solid var(--subtle);border-radius:4px;padding:8px 12px;color:#fff;font-size:13px;outline:none;font-family:var(--sans);">
+        </div>
+        <table class="tier-table">
+          <thead>
+            <tr>
+              <th>Card</th>
+              <th>Program</th>
+              <th>Ratio</th>
+              <th>Effective CPP</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700;">Axis Olympus</td>
+              <td style="color:var(--txt-2);">All partners</td>
+              <td><span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--emerald);">1 : 4</span></td>
+              <td style="font-family:var(--mono);color:var(--emerald);">₹3.52</td>
+              <td><span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald);border:1px solid rgba(16,185,129,.2);">🏆 Best in India</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">HDFC Infinia</td>
+              <td style="color:var(--txt-2);">KrisFlyer, Flying Blue, Avios</td>
+              <td><span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--emerald-l);">1 : 1</span></td>
+              <td style="font-family:var(--mono);color:var(--emerald-l);">₹2.20</td>
+              <td><span class="badge" style="background:rgba(52,211,153,.1);color:var(--emerald-l);border:1px solid rgba(52,211,153,.2);">Elite</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">HDFC Infinia</td>
+              <td style="color:var(--txt-2);">Air India, Marriott, Aeroplan</td>
+              <td><span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--amber);">2 : 1</span></td>
+              <td style="font-family:var(--mono);color:var(--amber);">₹0.90</td>
+              <td><span class="badge" style="background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2);">Devalued '24</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Axis Atlas</td>
+              <td style="color:var(--txt-2);">Airlines (Group A & B)</td>
+              <td><span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--emerald-l);">1 : 2</span></td>
+              <td style="font-family:var(--mono);color:var(--emerald-l);">₹1.76</td>
+              <td><span class="badge" style="background:rgba(52,211,153,.1);color:var(--emerald-l);border:1px solid rgba(52,211,153,.2);">Strong</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">HSBC Premier</td>
+              <td style="color:var(--txt-2);">All — incl. United 1:1</td>
+              <td><span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--emerald-l);">1 : 1</span></td>
+              <td style="font-family:var(--mono);color:var(--emerald-l);">₹1.40</td>
+              <td><span class="badge" style="background:rgba(124,58,237,.1);color:var(--purple-l);border:1px solid rgba(124,58,237,.2);">United King 👑</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Amex Platinum</td>
+              <td style="color:var(--txt-2);">Marriott Bonvoy</td>
+              <td><span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--emerald-l);">1 : 1</span></td>
+              <td style="font-family:var(--mono);color:var(--emerald-l);">₹1.25</td>
+              <td><span class="badge" style="background:rgba(52,211,153,.1);color:var(--emerald-l);border:1px solid rgba(52,211,153,.2);">Best Hotel Rate</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">SBI Aurum</td>
+              <td style="color:var(--txt-2);">Air India Maharaja Club</td>
+              <td><span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--red);">5 : 1</span></td>
+              <td style="font-family:var(--mono);color:var(--red);">₹0.14</td>
+              <td><span class="badge" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);">❌ Worst in India</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  DESIGN SYSTEM REFERENCE (for review only)                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section style="background:var(--surface);border-top:2px solid var(--purple);padding:48px 0;">
+  <div class="container">
+    <p class="label" style="margin-bottom:20px;">Design System Reference</p>
+    <div class="grid-3" style="gap:24px;margin-bottom:32px;">
+      <!-- Colors -->
+      <div>
+        <p style="font-size:12px;color:var(--txt-2);font-weight:600;margin-bottom:12px;">Colour Palette</p>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;background:#7C3AED;border-radius:4px;box-shadow:2px 2px 0 #000;"></div><div><div style="font-size:12px;font-weight:700;">#7C3AED — Purple</div><div style="font-size:10px;color:var(--txt-3);">Primary accent</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;background:#10B981;border-radius:4px;box-shadow:2px 2px 0 #000;"></div><div><div style="font-size:12px;font-weight:700;">#10B981 — Emerald</div><div style="font-size:10px;color:var(--txt-3);">High value / Success</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;background:#0D0D0D;border:1px solid #333;border-radius:4px;"></div><div><div style="font-size:12px;font-weight:700;">#0D0D0D — Charcoal</div><div style="font-size:10px;color:var(--txt-3);">Base background</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;background:#141414;border:1px solid #333;border-radius:4px;"></div><div><div style="font-size:12px;font-weight:700;">#141414 — Surface L1</div><div style="font-size:10px;color:var(--txt-3);">Cards / containers</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;background:#9CA3AF;border-radius:4px;"></div><div><div style="font-size:12px;font-weight:700;">#9CA3AF — Gray-400</div><div style="font-size:10px;color:var(--txt-3);">Secondary text</div></div></div>
+        </div>
+      </div>
+      <!-- Buttons -->
+      <div>
+        <p style="font-size:12px;color:var(--txt-2);font-weight:600;margin-bottom:12px;">Buttons (NeoPOP)</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn-purple">⚡ Primary Action</button>
+          <button class="btn-emerald">✓ Confirm / Success</button>
+          <button class="btn-ghost">Secondary / Ghost</button>
+          <span class="pill active">Active Filter</span>
+          <span class="pill">Inactive Filter</span>
+        </div>
+      </div>
+      <!-- Typography -->
+      <div>
+        <p style="font-size:12px;color:var(--txt-2);font-weight:600;margin-bottom:12px;">Typography — Manrope</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;color:var(--txt-3);">Display / Hero number</div>
+          <div class="hero-num grad-emerald">₹2.4L</div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:8px;">Section heading</div>
+          <div class="h2">True Value</div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Body text</div>
+          <div style="font-size:14px;color:var(--txt-2);line-height:1.6;">Your points are worth more than your bank admits.</div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Label / caption</div>
+          <p class="label">Transfer Partners</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+  // ── Pill interactivity ──────────────────────────────────────
+  document.querySelectorAll('.pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      const group = this.closest('div');
+      if (group) group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      this.classList.toggle('active');
+    });
+  });
+
+  // ── Calculator demo ─────────────────────────────────────────
+  const CARD_DATA = {
+    infinia: { name:'HDFC Infinia', cpp: 0.5, bestProgram:'KrisFlyer', mult: 4.4 },
+    dcb:     { name:'HDFC Diners Black', cpp: 0.5, bestProgram:'KrisFlyer', mult: 4.4 },
+    atlas:   { name:'Axis Atlas', cpp: 0.2, bestProgram:'KrisFlyer (1:2)', mult: 8.8 },
+    olympus: { name:'Axis Olympus', cpp: 0.2, bestProgram:'Aeroplan (1:4)', mult: 18.0 },
+    amex:    { name:'Amex Platinum', cpp: 0.25, bestProgram:'Marriott Bonvoy', mult: 5.0 },
+    hsbc:    { name:'HSBC Premier', cpp: 0.25, bestProgram:'United MileagePlus', mult: 5.6 },
+  };
+
+  function formatPoints(input) {
+    const digits = input.value.replace(/[^0-9]/g, '');
+    if (digits) input.value = Number(digits).toLocaleString('en-IN');
+  }
+
+  function setPoints(n) {
+    const inp = document.getElementById('pointsInput');
+    inp.value = n.toLocaleString('en-IN');
+    updateCalc();
+  }
+
+  function updateCalc() { document.getElementById('calcResult').style.display = 'none'; }
+
+  function runCalc() {
+    const cardKey = document.getElementById('cardSelect').value;
+    const raw = document.getElementById('pointsInput').value.replace(/,/g, '');
+    const pts = parseInt(raw, 10);
+    if (!cardKey || !pts || pts < 1000) return;
+
+    const card = CARD_DATA[cardKey];
+    const baseline = Math.round(pts * card.cpp);
+    const best = Math.round(pts * card.cpp * card.mult);
+
+    const fmt = n => n >= 100000 ? `₹${(n/100000).toFixed(1)}L` : `₹${(n/1000).toFixed(0)}K`;
+
+    document.getElementById('resultValue').textContent = fmt(best);
+    document.getElementById('resultSubtext').innerHTML =
+      `via <strong style="color:#fff">${card.bestProgram}</strong> — vs only <strong style="color:#EF4444">${fmt(baseline)}</strong> as statement credit`;
+    document.getElementById('resultMult').textContent = card.mult.toFixed(1) + '×';
+
+    const result = document.getElementById('calcResult');
+    result.style.display = 'block';
+    result.style.animation = 'none';
+    void result.offsetWidth;
+    result.style.animation = 'ticker .7s cubic-bezier(.16,1,.3,1) forwards';
+  }
+</script>
+
+<style>
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+</style>
+</body>
+</html>

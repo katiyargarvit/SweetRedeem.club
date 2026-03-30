@@ -1,0 +1,31 @@
+# Frontend
+frontend/.next
+frontend/out
+frontend/dist
+frontend/build
+frontend/node_modules
+frontend/.env.local
+frontend/.env.*.local
+
+# Backend
+backend/.venv
+backend/__pycache__
+backend/venv
+backend/*.egg-info
+backend/dist
+backend/build
+
+# Scraper
+scraper/node_modules
+scraper/.env.local
+
+# System
+.DS_Store
+*.log
+.vscode
+.idea
+
+# Secrets
+.env
+.env.local
+.env.*.local

@@ -1,0 +1,29 @@
+# ── Core ──────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+pydantic==2.7.1
+pydantic-settings==2.3.1
+python-multipart==0.0.9      # multipart/form-data (file uploads)
+
+# ── Database ──────────────────────────────────────────────────
+supabase==2.4.6
+psycopg2-binary==2.9.9
+
+# ── Caching ───────────────────────────────────────────────────
+upstash-redis==1.1.0
+
+# ── Scraping ──────────────────────────────────────────────────
+playwright==1.44.0            # JS-rendered pages (HDFC SmartBuy, Axis offers)
+beautifulsoup4==4.12.3        # Static HTML pages (Air India, Marriott award charts)
+requests==2.32.3
+httpx==0.27.0
+praw==7.7.1                  # Reddit API — r/CreditCardsIndia, r/IndiaInvestments
+
+# ── PDF Parsing (in-memory only — file never touches disk) ────
+pdfplumber==0.11.1            # Handles Indian bank statement tables reliably
+
+# ── Scheduling ────────────────────────────────────────────────
+apscheduler==3.10.4           # Phase 2 upgrade path: Celery + Redis
+
+# ── Utilities ─────────────────────────────────────────────────
+python-dotenv==1.0.1
