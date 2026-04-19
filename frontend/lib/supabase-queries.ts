@@ -120,6 +120,27 @@ export async function fetchSweetSpots(
   })) as SweetSpotRow[];
 }
 
+/** Fetch a single sweet spot by ID */
+export async function fetchSweetSpotById(id: string): Promise<SweetSpotRow | null> {
+  const { data, error } = await supabase
+    .from('sweet_spots')
+    .select(`*, loyalty_programs ( name, type )`)
+    .eq('id', id)
+    .eq('status', 'live')
+    .eq('is_active', true)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw new Error(`fetchSweetSpotById: ${error.message}`);
+  if (!data) return null;
+
+  return {
+    ...(data as any),
+    program_name: (data as any).loyalty_programs?.name ?? null,
+    program_type: (data as any).loyalty_programs?.type ?? null,
+    loyalty_programs: undefined,
+  } as SweetSpotRow;
+}
+
 /** Fetch the single highest-CPP live sweet spot (Deal of the Day) */
 export async function fetchDealOfTheDay(): Promise<SweetSpotRow | null> {
   const { data, error } = await supabase

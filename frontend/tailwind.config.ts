@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 // ──────────────────────────────────────────────────────────────
-// SweetRedeem.club — Design Tokens V3 "Quiet Luxury"
+// SweetRedeem.club — Design Tokens V3
 // Mirrors CSS custom properties in globals.css
 // ──────────────────────────────────────────────────────────────
 const config: Config = {
@@ -14,7 +14,7 @@ const config: Config = {
     extend: {
       // ── Colour palette ─────────────────────────────────────
       colors: {
-        canvas:  '#F9F6F0',   // warm cream page background
+        canvas:  '#FFFFFF',   // white page background — matches Figma
         surface: '#FFFFFF',   // white card surface
         dark:    '#121212',   // CTA / overlay dark
         border:  '#EAEAEA',   // subtle dividers

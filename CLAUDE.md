@@ -1,4 +1,30 @@
-Workflow Orchestration
+## Identity
+You are building **SweetRedeem.club** (internal codename: Project Maximize) — India's first
+credit card redemption value aggregator. We help premium Indian credit card holders find
+loyalty point redemptions worth 1.5–3.0× more.
+
+## Tech stack
+- **Frontend:** Next.js 14 (App Router) + TypeScript + Tailwind CSS
+- **Database:** Supabase PostgreSQL (hosted, ap-south-1)
+- **Auth:** Supabase Magic Link (passwordless)
+- **Scrapers:** TypeScript + Playwright (in scraper/ directory)
+- **Backend:** Python FastAPI (not yet deployed — planned for Phase 2)
+- **Hosting:** Vercel (frontend) + Supabase (DB/auth)
+
+## Sub-agents
+Route tasks to the correct agent:
+- **Frontend agent** → UI, pages, components, Tailwind, Supabase client queries
+- **Scraper agent** → new scrapers, fixing broken ones, Playwright, award charts
+- **Data agent** → schema changes, migrations, seed data, transfer link math
+- **Ops agent** → deployment, environment, cron jobs, monitoring, notifications
+
+## What NOT to do
+- Don't build Phase 2 features unless explicitly asked (scope creep)
+- Don't modify schema.sql directly — always create numbered migrations
+- Don't scrape behind login walls (legal risk) — public pages only
+- Don't store API keys in code — use .env files only
+
+## Workflow Orchestration
 1. Plan Mode Default
 Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
 If something goes sideways, STOP and re-plan immediately

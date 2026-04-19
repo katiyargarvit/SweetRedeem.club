@@ -1,52 +1,25 @@
 'use client';
 
 // ============================================================
-// CuratedDeals — Roame-style deal cards with category filter pills
+// CuratedDeals — "Curated for you" section
+// Figma-matched: section header, filter pills, deal cards
 // ============================================================
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { SweetSpotRow } from '@/lib/database.types';
 import { formatINRFull, formatPoints } from '@/lib/supabase-queries';
-import DealDrawer from '@/components/ui/DealDrawer';
 
 type FilterKey = 'all' | 'business' | 'economy' | 'hotel' | 'flash';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'all',      label: 'All'         },
-  { key: 'business', label: 'Business ✈️' },
+  { key: 'business', label: '✈ Business'  },
   { key: 'economy',  label: 'Economy'     },
-  { key: 'hotel',    label: 'Hotels 🏨'   },
-  { key: 'flash',    label: 'Flash ⚡'    },
+  { key: 'hotel',    label: '🏨 Hotels'   },
+  { key: 'flash',    label: '⚡ Flash'    },
 ];
-
-// Colour for class badge
-const classBadgeStyle = (category: string): React.CSSProperties => {
-  if (category === 'business' || category === 'first') {
-    return {
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      padding: '3px 10px', borderRadius: 9999,
-      fontSize: 11, fontWeight: 700,
-      background: 'rgba(197,160,89,0.12)', color: '#C5A059',
-      border: '1px solid rgba(197,160,89,0.3)',
-    };
-  }
-  if (category === 'hotel_suite' || category === 'hotel_standard') {
-    return {
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      padding: '3px 10px', borderRadius: 9999,
-      fontSize: 11, fontWeight: 700,
-      background: 'rgba(0,200,133,0.1)', color: '#00A86B',
-      border: '1px solid rgba(0,200,133,0.25)',
-    };
-  }
-  return {
-    display: 'inline-flex', alignItems: 'center', gap: 4,
-    padding: '3px 10px', borderRadius: 9999,
-    fontSize: 11, fontWeight: 700,
-    background: 'rgba(37,99,235,0.08)', color: '#2563eb',
-    border: '1px solid rgba(37,99,235,0.2)',
-  };
-};
 
 const classBadgeLabel = (category: string) => {
   if (category === 'business') return '👑 Business';
@@ -55,24 +28,33 @@ const classBadgeLabel = (category: string) => {
   return '✈ Economy';
 };
 
-const barColor = (category: string) =>
-  category === 'business' || category === 'first'
-    ? 'linear-gradient(90deg, #C5A059, rgba(197,160,89,0.3))'
-    : 'linear-gradient(90deg, #2563eb, rgba(37,99,235,0.3))';
-
-// Fake metadata for Roame-style display (supplement until DB has this)
-const FAKE_META: Record<string, { date: string; time: string; duration: string; stops: string; airline: string }> = {
-  'mock-sin':      { date: 'Apr 14 · Mon', time: '20:55 — 08:30 +1', duration: '8h 05m', stops: 'Non-stop', airline: 'Singapore Airlines · SQ412' },
-  'mock-lhr':      { date: 'Apr 16 · Wed', time: '01:40 — 07:55',    duration: '10h 15m', stops: '1 stop AUH', airline: 'Etihad Airways · EY203' },
-  'mock-yyz':      { date: 'Apr 20 · Sun', time: '22:15 — 04:30 +1', duration: '16h 15m', stops: '1 stop',    airline: 'Air Canada · AC045' },
-  'mock-maldives': { date: 'Any night',    time: '— Hotel —',         duration: '',        stops: '',          airline: 'World of Hyatt · Cat 8' },
+const classBadgeColor = (category: string) => {
+  if (category === 'business' || category === 'first') return { bg: 'rgba(254,154,0,0.1)', color: '#fe9a00', border: 'rgba(254,154,0,0.25)' };
+  if (category.startsWith('hotel')) return { bg: 'rgba(0,200,133,0.1)', color: '#00a86b', border: 'rgba(0,200,133,0.25)' };
+  return { bg: 'rgba(37,99,235,0.08)', color: '#2563eb', border: 'rgba(37,99,235,0.2)' };
 };
 
-const TRANSFER_LABELS: Record<string, string> = {
-  krisflyer: 'KrisFlyer ✈',
-  etihad:    'Etihad Guest ✈',
-  aeroplan:  'Aeroplan 🍁',
-  hyatt:     'World of Hyatt 🏨',
+// CPP colour coding: green ≥ 2.0, amber 1.2–2.0, nothing below 1.2
+const cppColor = (cpp: number) =>
+  cpp >= 2.0 ? '#009966' : cpp >= 1.2 ? '#E08A00' : '#E03E3E';
+
+// Fake flight metadata (supplement until DB has this)
+const FAKE_META: Record<string, { date: string; airline: string; stops: string }> = {
+  'mock-sin':      { date: 'Apr 14 · Mon', airline: 'Singapore Airlines', stops: 'Non-stop' },
+  'mock-lhr':      { date: 'Apr 16 · Wed', airline: 'Etihad Airways',     stops: '1 stop'   },
+  'mock-yyz':      { date: 'Apr 20 · Sun', airline: 'Air Canada',         stops: '1 stop'   },
+  'mock-maldives': { date: 'Any night',    airline: 'World of Hyatt',      stops: 'Hotel'    },
+};
+
+// Program icon colour map (brand colours)
+const PROGRAM_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  krisflyer:  { bg: '#003366', text: '#fff',    label: 'SQ'  },
+  etihad:     { bg: '#bd8b13', text: '#fff',    label: 'EY'  },
+  aeroplan:   { bg: '#d32b2b', text: '#fff',    label: 'AC'  },
+  hyatt:      { bg: '#0041a0', text: '#fff',    label: 'WoH' },
+  ana:        { bg: '#003b91', text: '#fff',    label: 'ANA' },
+  flyingblue: { bg: '#0065ae', text: '#fff',    label: 'FB'  },
+  emirates:   { bg: '#c60c30', text: '#fff',    label: 'EK'  },
 };
 
 interface Props {
@@ -80,142 +62,235 @@ interface Props {
 }
 
 export default function CuratedDeals({ spots }: Props) {
-  const [filter, setFilter]           = useState<FilterKey>('all');
-  const [selectedSpot, setSelectedSpot] = useState<SweetSpotRow | null>(null);
+  const [filter, setFilter] = useState<FilterKey>('all');
+  const router = useRouter();
 
   const filtered = spots.filter((s) => {
     if (filter === 'all')      return true;
     if (filter === 'business') return s.category === 'business' || s.category === 'first';
     if (filter === 'economy')  return s.category === 'economy';
     if (filter === 'hotel')    return s.category.startsWith('hotel');
-    if (filter === 'flash')    return s.cpp >= 2.5; // flash = very high CPP
+    if (filter === 'flash')    return s.cpp >= 2.5;
     return true;
   });
 
   return (
     <>
-      {/* Section header */}
-      <div className="section-head" style={{ marginTop: 28, marginBottom: 10 }}>
-        <span className="section-title">Curated for you</span>
-        <span className="see-all">See all</span>
+      {/* ── Section header ────────────────────────────────── */}
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '40px 20px 0',
+        borderTop: '0.75px solid #e2e8f0',
+      }}>
+        <div>
+          <h2 style={{
+            fontSize: 17, fontWeight: 700, color: '#0A0A0A',
+            letterSpacing: '-0.3px', margin: 0,
+          }}>
+            Curated for you
+          </h2>
+        </div>
+        <Link
+          href="/sweet-spots"
+          style={{
+            fontSize: 13, fontWeight: 600, color: '#00A86B',
+            textDecoration: 'none',
+            display: 'flex', alignItems: 'center', gap: 3,
+          }}
+        >
+          See all
+        </Link>
       </div>
 
-      {/* Filter pills */}
-      <div className="hide-scrollbar" style={{ display: 'flex', gap: 8, padding: '0 20px', overflowX: 'auto', marginBottom: 16 }}>
+      {/* ── Filter pills ─────────────────────────────────── */}
+      <div style={{
+        display: 'flex', gap: 8,
+        padding: '16px 20px 0',
+        overflowX: 'auto',
+        scrollbarWidth: 'none',
+      }}>
         {FILTERS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className="pill"
-            data-active={filter === key ? 'true' : 'false'}
-            style={{ flexShrink: 0 }}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 9999,
+              border: filter === key ? '1px solid #0f172b' : '1px solid #e2e8f0',
+              background: filter === key ? '#0f172b' : '#fff',
+              color: filter === key ? '#fff' : '#64748b',
+              fontSize: 13, fontWeight: filter === key ? 700 : 500,
+              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+              transition: 'all 0.15s',
+            }}
           >
             {label}
           </button>
         ))}
       </div>
 
-      {/* Deal cards */}
-      <div style={{ padding: '0 20px' }}>
+      {/* ── Deal cards ───────────────────────────────────── */}
+      <div style={{ padding: '16px 20px 0' }}>
         {filtered.map((spot) => {
-          const meta = FAKE_META[spot.id];
-          const isHotel = spot.category.startsWith('hotel');
+          const meta        = FAKE_META[spot.id];
+          const isHotel     = spot.category.startsWith('hotel');
+          const badge       = classBadgeColor(spot.category);
+          const progInfo    = PROGRAM_COLORS[spot.program_id] ?? { bg: '#1e3a5c', text: '#fff', label: (spot.program_name ?? 'PT').substring(0,3).toUpperCase() };
+
           return (
             <div
               key={spot.id}
-              className="curated-card"
-              onClick={() => setSelectedSpot(spot)}
-              style={{ cursor: 'pointer' }}
+              onClick={() => router.push(`/sweet-spots/${spot.id}`)}
+              style={{
+                background: '#fff',
+                borderRadius: 24,
+                border: '0.75px solid #e2e8f0',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)',
+                marginBottom: 12,
+                cursor: 'pointer',
+                overflow: 'hidden',
+              }}
             >
-              {/* Top section */}
-              <div style={{ padding: '14px 16px 12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: '#000' }}>{meta?.date ?? 'Verified Mar 2026'}</p>
-                    <p style={{ fontSize: 10, color: '#666', marginTop: 2 }}>⏱ Updated recently</p>
+              {/* ── Card body ─── */}
+              <div style={{ padding: '20px 20px 16px' }}>
+
+                {/* Top row: program icon + route/info + class badge */}
+                <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+
+                  {/* Program logo chip */}
+                  <div style={{
+                    width: 56, height: 56, borderRadius: 14,
+                    background: progInfo.bg,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                  }}>
+                    <span style={{
+                      fontSize: progInfo.label.length > 2 ? 9 : 12,
+                      fontWeight: 800, color: progInfo.text,
+                      letterSpacing: '-0.5px',
+                    }}>{progInfo.label}</span>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    {isHotel ? (
-                      <span style={classBadgeStyle(spot.category)}>{classBadgeLabel(spot.category)}</span>
-                    ) : (
-                      <>
-                        <p style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: '#000' }}>
-                          {meta?.time ?? '—'}
-                        </p>
-                        <p style={{ fontSize: 11, color: '#666', marginTop: 2 }}>{meta?.airline ?? spot.program_name}</p>
-                      </>
+
+                  {/* Route + meta */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 0,
+                      marginBottom: 4,
+                    }}>
+                      {isHotel ? (
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172b' }}>
+                          {spot.route_or_property}
+                        </span>
+                      ) : (
+                        /* Show full "City A → City B, Country" as one line */
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172b', letterSpacing: '-0.2px' }}>
+                          {spot.route_or_property}
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: '#8a9fb1', margin: '0 0 4px' }}>
+                      {meta?.airline ?? spot.program_name}
+                      {meta?.stops && !isHotel && (
+                        <span style={{ color: '#cad5e2', margin: '0 4px' }}>·</span>
+                      )}
+                      {!isHotel && (
+                        <span>{meta?.stops}</span>
+                      )}
+                    </p>
+                    {meta?.date && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172b' }}>
+                          {meta.date}
+                        </span>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 3,
+                          padding: '2px 8px', borderRadius: 9999,
+                          fontSize: 11, fontWeight: 600,
+                          background: badge.bg, color: badge.color,
+                          border: `0.75px solid ${badge.border}`,
+                        }}>
+                          {classBadgeLabel(spot.category)} 👑
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {!isHotel && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <span style={classBadgeStyle(spot.category)}>{classBadgeLabel(spot.category)}</span>
-                    <p style={{ fontSize: 12, color: '#666' }}>{meta?.duration} · {meta?.stops}</p>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: '#000' }}>{spot.route_or_property}</p>
-                  </div>
-                )}
+                <div style={{ height: 1, background: '#f1f5f9', margin: '0 0 12px' }} />
 
-                {isHotel && (
-                  <>
-                    <p style={{ fontSize: 14, fontWeight: 800, color: '#000', marginTop: 4 }}>{spot.title}</p>
-                    <p style={{ fontSize: 11, color: '#666', marginTop: 3 }}>{spot.route_or_property}</p>
-                  </>
-                )}
-
-                {/* Route progress bar */}
+                {/* Bottom row: transfer path + CPP/points */}
                 <div style={{
-                  height: 3,
-                  borderRadius: 2,
-                  background: barColor(spot.category),
-                  width: '65%',
-                  marginTop: 10,
-                }} />
-              </div>
+                  display: 'flex', alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  {/* Transfer: AMEX + N more → Program */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 6,
+                      background: '#006fcf',
+                      border: '0.75px solid #005199',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>AM<br />EX</span>
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: '#8a9fb1' }}>+2</span>
+                    <span style={{ fontSize: 13, color: '#8a9fb1' }}>→</span>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 6,
+                      background: progInfo.bg,
+                      border: '0.75px solid rgba(0,0,0,0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <span style={{ fontSize: 8, fontWeight: 800, color: progInfo.text, letterSpacing: '-0.3px' }}>
+                        {progInfo.label}
+                      </span>
+                    </div>
+                    <div>
+                      <p style={{
+                        fontSize: 9, fontWeight: 600, color: '#8a9fb1',
+                        textTransform: 'uppercase', letterSpacing: '0.25px',
+                        margin: 0, lineHeight: 1.3,
+                      }}>{spot.program_name}<br />mileage program</p>
+                    </div>
+                  </div>
 
-              {/* Bottom section */}
-              <div style={{
-                padding: '11px 16px 13px',
-                borderTop: '1px solid #EAEAEA',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: 6,
-                    background: 'linear-gradient(135deg, #1a3a5c, #2563eb)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 9, fontWeight: 800, color: '#93C5FD',
-                    flexShrink: 0,
-                  }}>H</div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#666' }}>HDFC</span>
-                  <span style={{ fontSize: 12, color: '#666' }}>→</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#00C885' }}>
-                    {TRANSFER_LABELS[spot.program_id] ?? spot.program_name}
-                  </span>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: 15, fontWeight: 800, color: '#000' }}>
-                    {formatPoints(spot.points_required)} pts
-                  </p>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#00C885', marginTop: 1 }}>
-                    {formatINRFull(spot.est_cash_value_inr)} value
-                  </p>
-                  <p style={{ fontSize: 10, color: '#666' }}>
-                    ₹{spot.cpp.toFixed(2)}/pt
-                  </p>
+                  {/* Points + CPP */}
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{
+                      fontSize: 9, fontWeight: 700, color: '#7d93b5',
+                      textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 2px',
+                    }}>SWEETREDEEM</p>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: 26, fontWeight: 800, color: '#0f172b', letterSpacing: '-0.7px' }}>
+                        {formatPoints(spot.points_required)}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: '#7d93b5' }}>pts</span>
+                    </div>
+                    <p style={{
+                      fontSize: 11, fontWeight: 600,
+                      color: cppColor(spot.cpp),
+                      margin: '2px 0 0',
+                    }}>
+                      ₹{spot.cpp.toFixed(2)}/pt
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           );
         })}
+
+        {filtered.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '32px 0', color: '#90a1b9' }}>
+            <p style={{ fontSize: 14 }}>No deals found for this filter.</p>
+          </div>
+        )}
       </div>
 
-      {/* Deal Drawer */}
-      {selectedSpot && (
-        <DealDrawer spot={selectedSpot} onClose={() => setSelectedSpot(null)} />
-      )}
     </>
   );
 }

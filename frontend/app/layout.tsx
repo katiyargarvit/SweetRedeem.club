@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import Header from '@/components/ui/Header';
 import BottomNav from '@/components/ui/BottomNav';
 import './globals.css';
+// Caveat: script/handwriting font used in CuratedDeals "handpicked by the club" subtitle
+import { Caveat } from 'next/font/google';
+
+const caveat = Caveat({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-caveat' });
 
 // ── Metadata ────────────────────────────────────────────────
 export const metadata: Metadata = {
@@ -38,14 +42,14 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,   // prevent iOS zoom on input focus
-  themeColor: '#F9F6F0',
+  themeColor: '#FFFFFF',
 };
 
 // ── Layout ──────────────────────────────────────────────────
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN">
-      <body style={{ background: '#F9F6F0', minHeight: '100vh' }}>
+    <html lang="en-IN" className={caveat.variable}>
+      <body style={{ background: '#FFFFFF', minHeight: '100vh' }}>
 
         {/* ── Top header (client component — auth-aware) ────── */}
         <Header />

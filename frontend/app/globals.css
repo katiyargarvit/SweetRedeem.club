@@ -5,13 +5,13 @@
 @tailwind utilities;
 
 /* ──────────────────────────────────────────────────────────────
-   SweetRedeem.club — Global Styles V3 "Quiet Luxury"
+   SweetRedeem.club — Global Styles V3
    Design tokens mirror tailwind.config.ts for use in plain CSS
 ────────────────────────────────────────────────────────────── */
 
 /* ── CSS Variables ────────────────────────────────────────── */
 :root {
-  --bg-primary:      #F9F6F0;   /* warm cream canvas */
+  --bg-primary:      #FFFFFF;   /* white canvas — matches Figma */
   --bg-surface:      #FFFFFF;   /* card surface */
   --bg-overlay-dark: #121212;   /* dark CTA / overlay */
   --text-primary:    #000000;
@@ -40,7 +40,7 @@ html {
 }
 
 body {
-  background-color: var(--bg-primary);
+  background-color: #FFFFFF;
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;

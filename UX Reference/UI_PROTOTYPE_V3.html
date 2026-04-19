@@ -1,0 +1,2499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SweetRedeem.club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ──────────────────────────────────────────────────────
+   DESIGN TOKENS
+────────────────────────────────────────────────────── */
+:root {
+  --bg-primary:      #F9F6F0;
+  --bg-surface:      #FFFFFF;
+  --bg-overlay-dark: #121212;
+  --text-primary:    #000000;
+  --text-secondary:  #666666;
+  --text-on-dark:    #FFFFFF;
+  --accent-gold:     #C5A059;
+  --accent-gold-bg:  #F4ECD8;
+  --status-success:  #00C885;
+  --status-error:    #E03E3E;
+  --status-warn:     #E08A00;
+  --border-subtle:   #EAEAEA;
+  --shadow-card:     0 4px 12px rgba(0,0,0,0.06);
+  --shadow-sheet:    0 -8px 40px rgba(0,0,0,0.12);
+  --radius-card:     16px;
+  --radius-btn:      12px;
+  --radius-pill:     100px;
+}
+
+/* ──────────────────────────────────────────────────────
+   RESET + BASE
+────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #EDE9E1;
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 80px;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+/* ──────────────────────────────────────────────────────
+   PHONE SHELL
+────────────────────────────────────────────────────── */
+.phone {
+  width: 390px;
+  min-height: 844px;
+  background: var(--bg-primary);
+  border-radius: 50px;
+  border: 1px solid #D4CFC6;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.9);
+  display: flex;
+  flex-direction: column;
+}
+
+.island {
+  width: 126px; height: 34px;
+  background: #000;
+  border-radius: 20px;
+  margin: 14px auto 0;
+  flex-shrink: 0;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 28px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.screen {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 90px;
+  scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+
+/* ──────────────────────────────────────────────────────
+   BOTTOM NAV
+────────────────────────────────────────────────────── */
+.bottom-nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 84px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px 20px;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 14px;
+  transition: background 0.15s;
+  border: none;
+  background: none;
+  color: #BBBBBB;
+  position: relative;
+}
+.nav-item.active { color: var(--text-primary); }
+.nav-item .nav-icon { font-size: 20px; }
+.nav-item .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
+/* Active dot */
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  width: 4px; height: 4px;
+  background: var(--status-success);
+  border-radius: 50%;
+}
+
+/* ──────────────────────────────────────────────────────
+   TYPOGRAPHY
+────────────────────────────────────────────────────── */
+.serif-hero {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.label-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+}
+.mono-num {
+  font-family: 'Inter', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+/* ──────────────────────────────────────────────────────
+   PAGE SYSTEM
+────────────────────────────────────────────────────── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ──────────────────────────────────────────────────────
+   DEMO TABS (outside phone)
+────────────────────────────────────────────────────── */
+.demo-wrap {
+  width: 100%;
+  text-align: center;
+  padding: 10px 0 0;
+}
+.demo-hint { font-size: 12px; color: #999; margin-bottom: 12px; font-family: 'Inter', sans-serif; }
+.demo-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.demo-tab {
+  padding: 8px 18px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #D4CFC6;
+  background: #F9F6F0;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.demo-tab.active { background: #121212; color: #fff; border-color: #121212; }
+
+/* ──────────────────────────────────────────────────────
+   LAYOUT HELPERS
+────────────────────────────────────────────────────── */
+.px { padding: 0 20px; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.section-head { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin: 26px 0 14px; }
+.section-title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+.see-all { font-size: 13px; color: var(--status-success); font-weight: 600; cursor: pointer; }
+.divider { height: 1px; background: var(--border-subtle); margin: 20px; }
+
+/* ──────────────────────────────────────────────────────
+   SURFACE CARD
+────────────────────────────────────────────────────── */
+.surface {
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+/* ──────────────────────────────────────────────────────
+   TIER BADGES
+────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.badge-elite { background: rgba(0,200,133,0.1); color: #00A86B; border: 1px solid rgba(0,200,133,0.2); }
+.badge-high  { background: rgba(0,200,133,0.06); color: #00A86B; border: 1px solid rgba(0,200,133,0.15); }
+.badge-good  { background: rgba(224,138,0,0.08); color: var(--status-warn); border: 1px solid rgba(224,138,0,0.15); }
+.badge-poor  { background: rgba(224,62,62,0.08); color: var(--status-error); border: 1px solid rgba(224,62,62,0.15); }
+.badge-flash { background: rgba(197,160,89,0.12); color: var(--accent-gold); border: 1px solid rgba(197,160,89,0.25); }
+
+/* ──────────────────────────────────────────────────────
+   PILL FILTERS
+────────────────────────────────────────────────────── */
+.pill-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pill-row::-webkit-scrollbar { display: none; }
+.pill {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.pill.active {
+  background: var(--bg-overlay-dark);
+  color: var(--text-on-dark);
+  border-color: var(--bg-overlay-dark);
+}
+
+/* ──────────────────────────────────────────────────────
+   DESTINATION IMAGE GRADIENTS
+────────────────────────────────────────────────────── */
+.dest-sin      { background: linear-gradient(160deg, #0f2027, #203a43, #2c5364); }
+.dest-cdg      { background: linear-gradient(160deg, #1a1a2e, #16213e, #533483); }
+.dest-lhr      { background: linear-gradient(160deg, #1c1c1c, #2d1b69, #11998e); }
+.dest-maldives { background: linear-gradient(160deg, #005c97, #0b8793, #38ef7d); }
+.dest-yyz      { background: linear-gradient(160deg, #1a1a1a, #243b55, #141e30); }
+.dest-auh      { background: linear-gradient(160deg, #f7971e, #c94b4b, #4b134f); }
+.dest-del      { background: linear-gradient(160deg, #fc4a1a, #f7b733); }
+.dest-bkk      { background: linear-gradient(160deg, #360033, #0b8793); }
+.dest-hotel    { background: linear-gradient(160deg, #1a1a2e, #4286f4, #38ef7d); }
+
+/* ──────────────────────────────────────────────────────
+   HERO FEATURED CARD (full-bleed image + white bottom)
+────────────────────────────────────────────────────── */
+.hero-deal {
+  margin: 0 20px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hero-deal:active { transform: scale(0.98); }
+.hero-deal .img-area {
+  height: 210px;
+  position: relative;
+}
+.hero-deal .img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%);
+}
+.hero-deal .img-badges {
+  position: absolute;
+  top: 14px; left: 14px; right: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.hero-deal .img-route {
+  position: absolute;
+  bottom: 14px; left: 16px; right: 16px;
+}
+.hero-deal .card-data {
+  padding: 16px 16px 18px;
+}
+
+/* ──────────────────────────────────────────────────────
+   SMALL HORIZONTAL DEAL CARDS
+────────────────────────────────────────────────────── */
+.h-scroll {
+  display: flex;
+  gap: 12px;
+  padding: 0 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.h-scroll::-webkit-scrollbar { display: none; }
+
+.deal-sm {
+  flex-shrink: 0;
+  width: 160px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+}
+.deal-sm .sm-img { height: 110px; position: relative; }
+.deal-sm .sm-body { padding: 10px 12px 12px; }
+.deal-sm .sm-route { font-size: 14px; font-weight: 700; }
+.deal-sm .sm-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.deal-sm .sm-val { font-size: 13px; color: var(--status-success); font-weight: 700; margin-top: 8px; }
+
+/* ──────────────────────────────────────────────────────
+   FULL-WIDTH DISCOVER CARDS
+────────────────────────────────────────────────────── */
+.discover-card {
+  margin: 0 20px 14px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.discover-card:active { transform: scale(0.99); }
+.discover-card .dc-img { height: 170px; position: relative; }
+.discover-card .dc-body { padding: 14px 16px 16px; }
+
+.value-row {
+  display: flex;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+.value-item {
+  flex: 1;
+  padding-right: 12px;
+  margin-right: 12px;
+  border-right: 1px solid var(--border-subtle);
+}
+.value-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+.value-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+.value-num { font-size: 16px; font-weight: 800; margin-top: 2px; color: var(--text-primary); }
+.value-num.green { color: var(--status-success); }
+
+/* ──────────────────────────────────────────────────────
+   SEARCH BAR
+────────────────────────────────────────────────────── */
+.search-bar {
+  margin: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow-card);
+}
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+}
+.filter-btn {
+  width: 32px; height: 32px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ──────────────────────────────────────────────────────
+   STAT STRIP
+────────────────────────────────────────────────────── */
+.stat-strip {
+  display: flex;
+  margin: 0 20px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.stat-cell {
+  flex: 1;
+  padding: 14px;
+  text-align: center;
+  border-right: 1px solid var(--border-subtle);
+}
+.stat-cell:last-child { border-right: none; }
+.stat-val { font-size: 20px; font-weight: 800; color: var(--status-success); }
+.stat-lbl { font-size: 10px; color: var(--text-secondary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+/* ──────────────────────────────────────────────────────
+   AVATAR & POINTS PILL
+────────────────────────────────────────────────────── */
+.avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-gold), #E8D5B5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #5A3A00;
+  border: 2px solid var(--bg-surface);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.pts-pill {
+  background: rgba(0,200,133,0.08);
+  border: 1px solid rgba(0,200,133,0.2);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #00A86B;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ──────────────────────────────────────────────────────
+   REWARD PROGRESS BANNER
+────────────────────────────────────────────────────── */
+.reward-banner {
+  margin: 0 20px;
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, #E8D5B5 0%, #F4ECD8 50%, #EDD9A3 100%);
+  border: 1px solid rgba(197,160,89,0.3);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(197,160,89,0.2);
+}
+.reward-icon {
+  font-size: 28px;
+  width: 50px; height: 50px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ──────────────────────────────────────────────────────
+   PROGRESS BAR
+────────────────────────────────────────────────────── */
+.progress-track {
+  height: 4px;
+  background: var(--border-subtle);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--status-success);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ──────────────────────────────────────────────────────
+   CALCULATOR
+────────────────────────────────────────────────────── */
+.calc-surface {
+  margin: 0 20px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+}
+.card-chip {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.card-chip.active {
+  background: var(--bg-overlay-dark);
+  color: #fff;
+  border-color: var(--bg-overlay-dark);
+}
+.pts-input {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  color: var(--text-primary);
+  font-size: 30px;
+  font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  margin-top: 14px;
+  transition: border-color 0.15s;
+}
+.pts-input:focus { border-color: var(--status-success); }
+.quick-chips { display: flex; gap: 8px; margin-top: 8px; }
+.q-chip {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.12s;
+}
+.q-chip:hover { border-color: var(--status-success); color: var(--status-success); }
+
+/* Value display */
+.value-result {
+  background: linear-gradient(135deg, rgba(0,200,133,0.06), rgba(0,200,133,0.02));
+  border: 1px solid rgba(0,200,133,0.2);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  margin-top: 14px;
+  text-align: center;
+  display: none;
+}
+.value-result.show { display: block; }
+.big-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--status-success);
+  letter-spacing: -0.02em;
+}
+.multi-tag { font-size: 13px; font-weight: 600; color: #00A86B; margin-top: 6px; }
+
+/* Result rows */
+.result-row {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  margin: 0 20px 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.15s;
+}
+.result-row.best { border-color: rgba(0,200,133,0.3); background: rgba(0,200,133,0.02); }
+.prog-icon {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.baseline-box {
+  margin: 0 20px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.baseline-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.baseline-row:last-child { border-bottom: none; }
+
+/* ──────────────────────────────────────────────────────
+   CARDS PAGE
+────────────────────────────────────────────────────── */
+.card-scroll {
+  display: flex;
+  gap: 12px;
+  padding: 0 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.card-scroll::-webkit-scrollbar { display: none; }
+
+.cc-card {
+  flex-shrink: 0;
+  width: 280px;
+  height: 160px;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.cc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.2); }
+.cc-card.selected { outline: 2px solid var(--status-success); outline-offset: 3px; }
+
+.cc-infinia { background: linear-gradient(135deg, #1a3a5c, #2563eb66); }
+.cc-atlas   { background: linear-gradient(135deg, #1c1432, #7c3aed66); }
+.cc-amex    { background: linear-gradient(135deg, #1c1a14, #d9770666); }
+.cc-magnus  { background: linear-gradient(135deg, #2d1010, #ef444466); }
+.cc-hsbc    { background: linear-gradient(135deg, #0d1c0d, #10b98166); }
+
+.card-info-panel {
+  margin: 16px 20px 0;
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  padding: 18px;
+}
+.card-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+.stat-box {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+}
+.tx-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  background: var(--bg-surface);
+  border-radius: 13px;
+  margin: 0 20px 8px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.tx-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* ──────────────────────────────────────────────────────
+   CTA BUTTONS
+────────────────────────────────────────────────────── */
+.btn-dark {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius-btn);
+  background: var(--bg-overlay-dark);
+  color: var(--text-on-dark);
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.15s;
+  margin-top: 14px;
+}
+.btn-dark:hover { opacity: 0.88; }
+.btn-green {
+  background: var(--status-success);
+  color: #fff;
+}
+
+/* ──────────────────────────────────────────────────────
+   BOTTOM SHEET
+────────────────────────────────────────────────────── */
+.sheet-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+.sheet-overlay.open { display: flex; }
+.bottom-sheet {
+  width: 100%;
+  max-width: 430px;
+  background: var(--bg-surface);
+  border-radius: 28px 28px 0 0;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sheet);
+  overflow-y: auto;
+  max-height: 92vh;
+  animation: slideUp 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-handle { width: 36px; height: 4px; background: var(--border-subtle); border-radius: 2px; margin: 12px auto 0; }
+.sheet-img {
+  height: 210px;
+  margin: 14px 16px 0;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  position: relative;
+}
+.sheet-body { padding: 20px 20px 44px; }
+.sheet-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 30px; height: 30px;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.detail-list {
+  background: var(--bg-primary);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  margin: 14px 0;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-key { color: var(--text-secondary); }
+.detail-val { font-weight: 600; }
+.warn-box {
+  background: rgba(197,160,89,0.08);
+  border: 1px solid rgba(197,160,89,0.2);
+  border-radius: 12px;
+  padding: 13px 14px;
+  font-size: 12px;
+  color: #7A5C00;
+  line-height: 1.55;
+}
+
+/* Lock overlay */
+.lock-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(249,246,240,0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* ──────────────────────────────────────────────────────
+   DESIGN SYSTEM PAGE SWATCHES
+────────────────────────────────────────────────────── */
+.swatch-grid { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 20px; margin-bottom: 10px; }
+.swatch {
+  flex: 1; min-width: 70px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: flex-end;
+  padding: 5px 7px;
+}
+.swatch span { font-size: 8px; font-weight: 600; }
+
+/* ── Sentence fade (whole line transitions as one) ───── */
+#anim-sentence {
+  transition: opacity 1.5s ease-in-out;
+}
+
+/* ──────────────────────────────────────────────────────
+   DEAL OF THE DAY — points selector
+────────────────────────────────────────────────────── */
+.dotd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.dotd-opt {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+.dotd-opt.active {
+  background: var(--bg-overlay-dark);
+  border-color: var(--bg-overlay-dark);
+}
+.dotd-pts {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: color 0.15s;
+}
+.dotd-opt.active .dotd-pts { color: rgba(255,255,255,0.65); }
+.dotd-val {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--status-success);
+  margin-top: 3px;
+  transition: color 0.15s;
+}
+.dotd-opt.active .dotd-val { color: #fff; }
+.dotd-arrow {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  transition: color 0.15s;
+}
+.dotd-opt.active .dotd-arrow { color: rgba(255,255,255,0.5); }
+
+/* ──────────────────────────────────────────────────────
+   CURATED FOR YOU — Roame-style deal cards
+────────────────────────────────────────────────────── */
+.curated-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-bottom: 12px;
+}
+.curated-card:active { transform: scale(0.99); }
+.curated-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.cc-top { padding: 14px 16px 12px; }
+.cc-bottom {
+  padding: 11px 16px 13px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cc-class-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.cc-class-biz { background: rgba(197,160,89,0.12); color: var(--accent-gold); border: 1px solid rgba(197,160,89,0.3); }
+.cc-class-eco { background: rgba(37,99,235,0.08); color: #2563eb; border: 1px solid rgba(37,99,235,0.2); }
+.cc-class-first { background: rgba(0,200,133,0.1); color: #00A86B; border: 1px solid rgba(0,200,133,0.25); }
+.route-bar {
+  height: 3px;
+  border-radius: 2px;
+  margin: 10px 0 0;
+}
+.route-bar-biz { background: linear-gradient(90deg, var(--accent-gold) 0%, rgba(197,160,89,0.3) 100%); }
+.route-bar-eco { background: linear-gradient(90deg, #2563eb 0%, rgba(37,99,235,0.3) 100%); }
+
+/* ──────────────────────────────────────────────────────
+   POINTS VALUE COMPARISON (bar chart)
+────────────────────────────────────────────────────── */
+.chart-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 88px;
+}
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+.chart-bar {
+  width: 100%;
+  border-radius: 5px 5px 0 0;
+  transition: opacity 0.2s;
+  position: relative;
+}
+.chart-lbl {
+  font-size: 8px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.3;
+  font-weight: 600;
+}
+.chart-top-val {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+/* ──────────────────────────────────────────────────────
+   FAQ ACCORDION
+────────────────────────────────────────────────────── */
+.faq-item {
+  background: var(--bg-surface);
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.faq-item:hover { box-shadow: var(--shadow-card); }
+.faq-q {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.faq-arrow {
+  font-size: 18px;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.faq-item.open .faq-arrow { transform: rotate(90deg); }
+.faq-a {
+  display: none;
+  padding: 0 16px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+.faq-item.open .faq-a { display: block; }
+
+/* ──────────────────────────────────────────────────────
+   T&C SECTION
+────────────────────────────────────────────────────── */
+.tnc-box {
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  padding: 16px 18px;
+}
+.tnc-links {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.tnc-link {
+  font-size: 11px;
+  color: var(--accent-gold);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ── Demo controls ───────────────────────────────────── -->
+<div class="demo-wrap">
+  <p class="demo-hint">Tap the tabs to switch pages · click deal cards for detail sheet</p>
+  <div class="demo-tabs">
+    <button class="demo-tab active" onclick="showPage('home',this)">🏠 Home</button>
+    <button class="demo-tab" onclick="showPage('discover',this)">🔍 Discover</button>
+    <button class="demo-tab" onclick="showPage('calculate',this)">⚡ Calculate</button>
+    <button class="demo-tab" onclick="showPage('cards',this)">💳 Cards</button>
+    <button class="demo-tab" onclick="showPage('design',this)">🎨 Tokens</button>
+  </div>
+</div>
+
+<!-- ── Phone ───────────────────────────────────────────── -->
+<div class="phone">
+  <div class="island"></div>
+  <div class="status-bar">
+    <span style="font-weight:700;">9:41</span>
+    <span>📶 🔋</span>
+  </div>
+
+  <div class="screen" id="mainScreen">
+
+    <!-- ████████████████████████████████
+         HOME
+    ████████████████████████████████ -->
+    <div class="page active" id="page-home">
+
+      <!-- ── Header row ──────────────────────────────── -->
+      <div class="flex-between px" style="margin-top:20px;">
+        <!-- Wordmark -->
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:var(--bg-overlay-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="font-size:14px;">✦</span>
+          </div>
+          <span style="font-size:15px;font-weight:800;letter-spacing:-0.02em;color:var(--text-primary);">SweetRedeem<span style="color:var(--accent-gold);">.club</span></span>
+        </div>
+
+        <!-- Right — logged-OUT state (default for demo) -->
+        <div id="hdr-loggedout" style="display:flex;align-items:center;gap:8px;">
+          <button onclick="toggleLogin()" style="padding:8px 18px;border-radius:100px;border:none;background:var(--bg-overlay-dark);color:#fff;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:-0.01em;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
+            Sign up →
+          </button>
+        </div>
+
+        <!-- Right — logged-IN state (hidden by default) -->
+        <div id="hdr-loggedin" style="display:none;align-items:center;gap:10px;">
+          <div class="pts-pill">✦ 1,24,500 pts</div>
+          <div class="avatar">G</div>
+        </div>
+      </div>
+
+      <!-- Demo toggle — small pill outside the phone narrative -->
+      <div style="text-align:right;padding:6px 20px 0;">
+        <span onclick="toggleLogin()" style="font-size:10px;color:var(--text-secondary);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;" id="loginToggleLabel">Switch to logged-in →</span>
+      </div>
+
+      <!-- ── Hero headline (CRED-style story) ───────── -->
+      <div style="padding:28px 20px 0;text-align:center;">
+
+        <!-- Eyebrow label -->
+        <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;">
+          <span style="font-size:14px;">✦</span>
+          <span style="font-size:12px;font-weight:700;color:var(--accent-gold);letter-spacing:0.06em;text-transform:uppercase;">SweetRedeem.club</span>
+        </div>
+
+        <!-- Massive serif headline -->
+        <h1 style="font-family:'Playfair Display',Georgia,serif;font-size:30px;font-weight:700;line-height:1.15;letter-spacing:-0.02em;color:var(--text-primary);margin-bottom:6px;">
+          Unlock the True Value<br>of Your Points.
+          <span style="font-style:italic;"> Instantly.</span>
+        </h1>
+
+        <!-- Animated rotating showcase -->
+        <div style="margin-top:14px;min-height:110px;">
+
+          <!-- Sentence fades as one block -->
+          <p id="anim-sentence" style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+            Redeem
+            <span id="anim-pts" style="font-weight:800;color:var(--text-primary);">50K</span>
+            <span id="anim-card" style="font-weight:800;color:var(--text-primary);">HDFC Infinia</span>
+            points for a sweet
+            <span id="anim-deal" style="font-weight:800;color:var(--text-primary);">flight</span>
+          </p>
+
+          <!-- "worth ₹X,XX,XXX" — single inline row, value never fades, only counts up -->
+          <div style="display:flex;align-items:baseline;gap:8px;justify-content:center;margin-top:8px;">
+            <em style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:600;color:var(--text-secondary);">worth</em>
+            <span id="anim-value" style="font-family:'Playfair Display',Georgia,serif;font-size:42px;font-weight:700;letter-spacing:-0.03em;color:var(--status-success);">₹2,40,000</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── 3-step milestone tracker ────────────────── -->
+      <div style="padding:24px 28px 0;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:0;">
+
+          <!-- Step 1 — done: Earn Rewards -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;">
+            <div style="width:44px;height:44px;border-radius:50%;border:2px solid var(--status-success);background:rgba(0,200,133,0.08);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,200,133,0.2);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M4 9l3.5 3.5L14 6" stroke="#00C885" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p style="font-size:9px;font-weight:700;color:var(--status-success);text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Earn<br>Rewards</p>
+          </div>
+
+          <!-- Connector 1→2 (half filled) -->
+          <div style="flex:1;height:2px;background:var(--border-subtle);position:relative;top:-12px;overflow:hidden;">
+            <div style="width:55%;height:100%;background:var(--status-success);"></div>
+          </div>
+
+          <!-- Step 2 — in progress: Unlock your sweet deal -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;">
+            <div style="width:44px;height:44px;border-radius:50%;border:2px solid var(--accent-gold);background:rgba(197,160,89,0.08);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-card);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M9 2l1.8 5.4H17l-4.9 3.5 1.8 5.5L9 13l-4.9 3.4 1.8-5.5L1 7.4h6.2z" fill="none" stroke="#C5A059" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p style="font-size:9px;font-weight:700;color:var(--accent-gold);text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Unlock<br>Sweet Deal</p>
+          </div>
+
+          <!-- Connector 2→3 (empty) -->
+          <div style="flex:1;height:2px;background:var(--border-subtle);position:relative;top:-12px;"></div>
+
+          <!-- Step 3 — locked: Sweet.Redeem. -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;">
+            <div style="width:44px;height:44px;border-radius:50%;border:2px solid var(--border-subtle);background:var(--bg-surface);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-card);">
+              <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+                <rect x="1" y="7" width="12" height="8" rx="2" fill="#F0EEE9" stroke="#C5A059" stroke-width="1.5"/>
+                <path d="M4 7V5a3 3 0 016 0v2" stroke="#C5A059" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p style="font-size:9px;font-weight:700;color:#BBBBBB;text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Sweet.<br>Redeem.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Deal of the Day ─────────────────────────── -->
+      <div class="section-head" style="margin-top:28px;">
+        <span class="section-title">🎯 Deal of the Day</span>
+        <span class="see-all" id="dotd-card-label">HDFC Infinia</span>
+      </div>
+
+      <!-- Points selector grid (4 options) -->
+      <div style="padding:0 20px;">
+        <div class="dotd-grid">
+
+          <div class="dotd-opt" onclick="selDotD(this,0)">
+            <div class="dotd-pts">10,000 pts</div>
+            <div class="dotd-val" style="color:var(--status-warn);">₹15,000</div>
+            <div class="dotd-arrow">DEL → BKK Economy ›</div>
+          </div>
+
+          <div class="dotd-opt" onclick="selDotD(this,1)">
+            <div class="dotd-pts">20,000 pts</div>
+            <div class="dotd-val" style="color:var(--status-warn);">₹10,000</div>
+            <div class="dotd-arrow">Statement Credit ›</div>
+          </div>
+
+          <div class="dotd-opt active" onclick="selDotD(this,2)">
+            <div class="dotd-pts">45,000 pts</div>
+            <div class="dotd-val">₹85,000</div>
+            <div class="dotd-arrow">BOM → CDG Economy ›</div>
+          </div>
+
+          <div class="dotd-opt" onclick="selDotD(this,3)">
+            <div class="dotd-pts">1,00,000 pts</div>
+            <div class="dotd-val">₹2,40,000</div>
+            <div class="dotd-arrow">BOM → SIN Business ›</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Dynamic deal card -->
+      <div id="dotd-deal-wrap" style="margin-top:14px;">
+
+        <!-- Deal 0 — DEL→BKK Economy (hidden) -->
+        <div class="hero-deal dotd-deal" id="dotd-0" style="display:none;" onclick="openSheet('s-cdg')">
+          <div class="img-area dest-bkk">
+            <div class="img-overlay"></div>
+            <div class="img-badges">
+              <span class="badge badge-flash" style="background:rgba(197,160,89,0.9);color:#fff;border:none;">⚡ Flash Deal</span>
+              <span style="background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;color:#fff;">Flying Blue</span>
+            </div>
+            <div class="img-route">
+              <p style="font-size:11px;color:rgba(255,255,255,0.65);">Air France · Economy</p>
+              <p style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">DEL → BKK</p>
+            </div>
+          </div>
+          <div class="card-data">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+              <div><p class="label-tag">Points required</p><p class="mono-num" style="font-size:22px;margin-top:2px;">10,000</p></div>
+              <div style="text-align:right;"><p class="label-tag">Cash value</p><p class="mono-num" style="font-size:22px;color:var(--status-warn);margin-top:2px;">₹15,000</p></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+              <p style="font-size:12px;color:var(--text-secondary);">₹1.50 per point</p>
+              <span class="badge badge-good">3× better than bank</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deal 1 — Statement Credit (hidden) -->
+        <div class="hero-deal dotd-deal" id="dotd-1" style="display:none;" onclick="">
+          <div class="img-area" style="background:linear-gradient(160deg,#1c1c1c,#374151);">
+            <div class="img-overlay"></div>
+            <div class="img-badges">
+              <span class="badge badge-poor" style="background:rgba(224,62,62,0.9);color:#fff;border:none;">⚠ Poor value</span>
+            </div>
+            <div class="img-route">
+              <p style="font-size:11px;color:rgba(255,255,255,0.65);">HDFC Bank Portal</p>
+              <p style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">Statement Credit</p>
+            </div>
+          </div>
+          <div class="card-data">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+              <div><p class="label-tag">Points redeemed</p><p class="mono-num" style="font-size:22px;margin-top:2px;">20,000</p></div>
+              <div style="text-align:right;"><p class="label-tag">Cash value</p><p class="mono-num" style="font-size:22px;color:var(--status-error);margin-top:2px;">₹10,000</p></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+              <p style="font-size:12px;color:var(--text-secondary);">₹0.50 per point — worst option</p>
+              <span class="badge badge-poor">You're leaving ₹5K on the table</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deal 2 — BOM→CDG Economy (default/active) -->
+        <div class="hero-deal dotd-deal" id="dotd-2" onclick="openSheet('s-cdg')">
+          <div class="img-area dest-cdg">
+            <div class="img-overlay"></div>
+            <div class="img-badges">
+              <span class="badge badge-high" style="background:rgba(0,200,133,0.9);color:#fff;border:none;">✨ High Value</span>
+              <span style="background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;color:#fff;">Flying Blue</span>
+            </div>
+            <div class="img-route">
+              <p style="font-size:11px;color:rgba(255,255,255,0.65);">Air France · Flying Blue</p>
+              <p style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">BOM → CDG</p>
+            </div>
+          </div>
+          <div class="card-data">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+              <div><p class="label-tag">Points required</p><p class="mono-num" style="font-size:22px;margin-top:2px;">45,000</p></div>
+              <div style="text-align:right;"><p class="label-tag">Cash value</p><p class="mono-num" style="font-size:22px;color:var(--status-success);margin-top:2px;">₹85,000</p></div>
+            </div>
+            <div class="progress-track" style="margin-top:12px;">
+              <div class="progress-fill" style="width:80%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <p style="font-size:12px;color:var(--text-secondary);">₹1.89 per point</p>
+              <span class="badge badge-high">3.8× better than bank</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deal 3 — BOM→SIN Business (hidden) -->
+        <div class="hero-deal dotd-deal" id="dotd-3" style="display:none;" onclick="openSheet('s-sin')">
+          <div class="img-area dest-sin">
+            <div class="img-overlay"></div>
+            <div class="img-badges">
+              <span class="badge badge-elite" style="background:rgba(0,200,133,0.9);color:#fff;border:none;">⭐ Elite deal</span>
+              <span style="background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;color:#fff;">KrisFlyer</span>
+            </div>
+            <div class="img-route">
+              <p style="font-size:11px;color:rgba(255,255,255,0.65);">Singapore Airlines · Business Class</p>
+              <p style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">BOM → SIN</p>
+            </div>
+          </div>
+          <div class="card-data">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+              <div><p class="label-tag">Points required</p><p class="mono-num" style="font-size:22px;margin-top:2px;">1,00,000</p></div>
+              <div style="text-align:right;"><p class="label-tag">Cash value</p><p class="mono-num" style="font-size:22px;color:var(--status-success);margin-top:2px;">₹2,40,000</p></div>
+            </div>
+            <div class="progress-track" style="margin-top:12px;">
+              <div class="progress-fill" style="width:100%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <p style="font-size:12px;color:var(--text-secondary);">₹2.40 per point</p>
+              <span class="badge badge-elite">4.8× better than bank</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Curated for you ──────────────────────────── -->
+      <div class="section-head" style="margin-top:28px;margin-bottom:10px;">
+        <span class="section-title">Curated for you</span>
+        <span class="see-all">See all</span>
+      </div>
+
+      <!-- Category pills -->
+      <div class="pill-row" style="margin-bottom:16px;">
+        <div class="pill active" onclick="selPill(this)">All</div>
+        <div class="pill" onclick="selPill(this)">Business ✈️</div>
+        <div class="pill" onclick="selPill(this)">Economy</div>
+        <div class="pill" onclick="selPill(this)">Hotels 🏨</div>
+        <div class="pill" onclick="selPill(this)">Flash ⚡</div>
+      </div>
+
+      <!-- Roame-style deal cards -->
+      <div style="padding:0 20px;">
+
+        <!-- Card 1: BOM→SIN Business -->
+        <div class="curated-card" onclick="openSheet('s-sin')">
+          <div class="cc-top">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+              <div>
+                <p style="font-size:12px;font-weight:600;color:var(--text-primary);">Apr 14 · Mon</p>
+                <p style="font-size:10px;color:var(--text-secondary);margin-top:2px;">⏱ Updated 1h ago</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:17px;font-weight:800;letter-spacing:-0.02em;color:var(--text-primary);">20:55 — 08:30 <sup style="font-size:10px;font-weight:600;color:var(--text-secondary);">+1</sup></p>
+                <p style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Singapore Airlines · SQ412</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="cc-class-badge cc-class-biz">👑 Business</span>
+              <p style="font-size:12px;color:var(--text-secondary);">8h 05m · Non-stop</p>
+              <p style="font-size:12px;font-weight:700;color:var(--text-primary);">BOM → SIN</p>
+            </div>
+            <div class="route-bar route-bar-biz" style="width:60%;"></div>
+          </div>
+          <div class="cc-bottom">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#1a3a5c,#2563eb);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#93C5FD;">H</div>
+              <span style="font-size:11px;font-weight:700;color:var(--text-secondary);">HDFC</span>
+              <span style="font-size:11px;color:var(--text-secondary);">+2</span>
+              <span style="font-size:12px;color:var(--text-secondary);">→</span>
+              <span style="font-size:12px;font-weight:700;color:var(--status-success);">KrisFlyer ✈</span>
+            </div>
+            <div style="text-align:right;">
+              <p style="font-size:15px;font-weight:800;color:var(--text-primary);">55,000 pts</p>
+              <p style="font-size:12px;color:var(--status-success);font-weight:600;margin-top:1px;">₹2,10,000 value</p>
+              <p style="font-size:10px;color:var(--text-secondary);">Seats: 2+</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: BOM→LHR Business -->
+        <div class="curated-card" onclick="openSheet('s-lhr')">
+          <div class="cc-top">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+              <div>
+                <p style="font-size:12px;font-weight:600;color:var(--text-primary);">Apr 16 · Wed</p>
+                <p style="font-size:10px;color:var(--text-secondary);margin-top:2px;">⏱ Updated 3h ago</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:17px;font-weight:800;letter-spacing:-0.02em;color:var(--text-primary);">01:40 — 07:55</p>
+                <p style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Etihad Airways · EY203</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="cc-class-badge cc-class-biz">👑 Business</span>
+              <p style="font-size:12px;color:var(--text-secondary);">10h 15m · 1 stop AUH</p>
+              <p style="font-size:12px;font-weight:700;color:var(--text-primary);">BOM → LHR</p>
+            </div>
+            <div class="route-bar route-bar-biz" style="width:45%;"></div>
+          </div>
+          <div class="cc-bottom">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#1a3a5c,#2563eb);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#93C5FD;">H</div>
+              <span style="font-size:11px;font-weight:700;color:var(--text-secondary);">HDFC</span>
+              <span style="font-size:12px;color:var(--text-secondary);">→</span>
+              <span style="font-size:12px;font-weight:700;color:var(--status-success);">Etihad Guest ✈</span>
+            </div>
+            <div style="text-align:right;">
+              <p style="font-size:15px;font-weight:800;color:var(--text-primary);">58,000 pts</p>
+              <p style="font-size:12px;color:var(--status-success);font-weight:600;margin-top:1px;">₹2,40,000 value</p>
+              <p style="font-size:10px;color:var(--text-secondary);">Seats: 1+</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: BOM→YYZ Economy (with flash badge) -->
+        <div class="curated-card" onclick="openSheet('s-yyz')">
+          <div class="cc-top">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+              <div>
+                <p style="font-size:12px;font-weight:600;color:var(--text-primary);">Apr 20 · Sun</p>
+                <div style="margin-top:3px;"><span class="badge badge-flash" style="padding:2px 8px;">⚡ Flash Sale</span></div>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:17px;font-weight:800;letter-spacing:-0.02em;color:var(--text-primary);">22:15 — 04:30 <sup style="font-size:10px;font-weight:600;color:var(--text-secondary);">+1</sup></p>
+                <p style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Air Canada · AC045</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="cc-class-badge cc-class-eco">Economy</span>
+              <p style="font-size:12px;color:var(--text-secondary);">16h 15m · 1 stop</p>
+              <p style="font-size:12px;font-weight:700;color:var(--text-primary);">BOM → YYZ</p>
+            </div>
+            <div class="route-bar route-bar-eco" style="width:75%;"></div>
+          </div>
+          <div class="cc-bottom">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#1a3a5c,#2563eb);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#93C5FD;">H</div>
+              <span style="font-size:11px;font-weight:700;color:var(--text-secondary);">HDFC</span>
+              <span style="font-size:12px;color:var(--text-secondary);">→</span>
+              <span style="font-size:12px;font-weight:700;color:var(--status-success);">Aeroplan 🍁</span>
+            </div>
+            <div style="text-align:right;">
+              <p style="font-size:15px;font-weight:800;color:var(--text-primary);">70,000 pts</p>
+              <p style="font-size:12px;color:var(--status-success);font-weight:600;margin-top:1px;">₹2,50,000 value</p>
+              <p style="font-size:10px;color:var(--status-error);">~3 days left</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Park Hyatt Maldives Hotel -->
+        <div class="curated-card" onclick="openSheet('s-hotel')">
+          <div class="cc-top">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+              <div>
+                <p style="font-size:12px;font-weight:600;color:var(--text-primary);">Any night · 1 room</p>
+                <p style="font-size:10px;color:var(--text-secondary);margin-top:2px;">⏱ Updated today</p>
+              </div>
+              <div style="text-align:right;">
+                <span class="cc-class-badge cc-class-first" style="font-size:12px;padding:5px 12px;">⭐ Elite Hotel</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <p style="font-size:14px;font-weight:800;color:var(--text-primary);">Park Hyatt Maldives 🏝</p>
+            </div>
+            <p style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Park Panoramic · per night · World of Hyatt Cat 8</p>
+            <div class="route-bar route-bar-biz" style="width:85%;margin-top:8px;"></div>
+          </div>
+          <div class="cc-bottom">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#1a3a5c,#2563eb);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#93C5FD;">H</div>
+              <span style="font-size:11px;font-weight:700;color:var(--text-secondary);">HDFC</span>
+              <span style="font-size:12px;color:var(--text-secondary);">→</span>
+              <span style="font-size:12px;font-weight:700;color:var(--status-success);">World of Hyatt 🏨</span>
+            </div>
+            <div style="text-align:right;">
+              <p style="font-size:15px;font-weight:800;color:var(--text-primary);">35,000 pts</p>
+              <p style="font-size:12px;color:var(--status-success);font-weight:600;margin-top:1px;">₹95,000 value</p>
+              <p style="font-size:10px;color:var(--text-secondary);">Save ₹60K vs cash</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Stats strip ─────────────────────────────── -->
+      <div style="margin-top:24px;">
+        <div class="stat-strip">
+          <div class="stat-cell"><div class="stat-val">93</div><div class="stat-lbl">Routes</div></div>
+          <div class="stat-cell"><div class="stat-val">3.2×</div><div class="stat-lbl">Avg Uplift</div></div>
+          <div class="stat-cell"><div class="stat-val">14</div><div class="stat-lbl">Cards</div></div>
+        </div>
+      </div>
+
+      <!-- ── Newsletter / Get Alerts ─────────────────── -->
+      <div style="margin:20px 20px 0;">
+        <div class="surface" style="padding:18px;background:linear-gradient(135deg,#F9F6F0,#F4ECD8);">
+          <p class="label-tag" style="color:var(--accent-gold);">Stay ahead</p>
+          <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-top:6px;line-height:1.25;">
+            Sweet spot alerts before they expire
+          </h3>
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:6px;line-height:1.5;">Flash sales, bonuses, and new routes — straight to your inbox.</p>
+          <button class="btn-dark" style="margin-top:14px;">Get Alerts →</button>
+        </div>
+      </div>
+
+      <!-- ── Reward Unlocked (moved below Get Alerts) ── -->
+      <div style="margin:14px 20px 0;">
+        <div class="reward-banner">
+          <div class="reward-icon">🏆</div>
+          <div style="flex:1;">
+            <p class="label-tag" style="color:#7A5C00;">Reward unlocked</p>
+            <p style="font-size:14px;font-weight:700;margin-top:2px;color:#3A2800;">Level 1 achieved — claim now</p>
+            <div class="progress-track" style="margin-top:8px;background:rgba(197,160,89,0.2);">
+              <div class="progress-fill" style="width:68%;background:var(--accent-gold);"></div>
+            </div>
+            <p style="font-size:11px;color:#8A6A00;margin-top:4px;">₹32,000 more to unlock Level 2</p>
+          </div>
+          <span style="font-size:18px;color:var(--accent-gold);">›</span>
+        </div>
+      </div>
+
+      <!-- ── Points Value Comparison ─────────────────── -->
+      <div style="margin:24px 20px 0;">
+        <div class="surface" style="overflow:hidden;padding:0;">
+          <!-- Gradient header -->
+          <div style="background:linear-gradient(135deg,#E8D5B5 0%,#F4ECD8 50%,#EDD9A3 100%);padding:18px 18px 14px;">
+            <p style="font-size:11px;font-weight:700;color:#7A5C00;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">The SweetRedeem.club edge</p>
+            <p style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:#3A2800;line-height:1.25;">Your points could be<br>worth much more</p>
+            <p style="font-size:11px;color:#8A6A00;margin-top:6px;">Based on 1,00,000 HDFC Infinia points</p>
+          </div>
+
+          <!-- Bar chart -->
+          <div style="padding:20px 18px 6px;background:var(--bg-surface);">
+            <div class="chart-wrap">
+
+              <!-- Statement Credit -->
+              <div class="chart-col">
+                <div class="chart-bar" style="height:14%;background:rgba(224,62,62,0.25);">
+                  <span class="chart-top-val" style="color:var(--status-error);">₹50K</span>
+                </div>
+                <p class="chart-lbl">Statement<br>Credit</p>
+              </div>
+
+              <!-- Cashback -->
+              <div class="chart-col">
+                <div class="chart-bar" style="height:19%;background:rgba(224,138,0,0.25);">
+                  <span class="chart-top-val" style="color:var(--status-warn);">₹65K</span>
+                </div>
+                <p class="chart-lbl">Cash<br>back</p>
+              </div>
+
+              <!-- Bank Portal -->
+              <div class="chart-col">
+                <div class="chart-bar" style="height:21%;background:rgba(224,138,0,0.2);">
+                  <span class="chart-top-val" style="color:var(--status-warn);">₹75K</span>
+                </div>
+                <p class="chart-lbl">Bank<br>Portal</p>
+              </div>
+
+              <!-- Economy Flights -->
+              <div class="chart-col">
+                <div class="chart-bar" style="height:40%;background:rgba(0,200,133,0.2);">
+                  <span class="chart-top-val" style="color:#00A86B;">₹1.4L</span>
+                </div>
+                <p class="chart-lbl">Economy<br>Flights</p>
+              </div>
+
+              <!-- Business Flights -->
+              <div class="chart-col">
+                <div class="chart-bar" style="height:60%;background:rgba(0,200,133,0.35);">
+                  <span class="chart-top-val" style="color:var(--status-success);">₹2.1L</span>
+                </div>
+                <p class="chart-lbl">Business<br>Flights</p>
+              </div>
+
+              <!-- First Class -->
+              <div class="chart-col">
+                <div class="chart-bar" style="height:100%;background:linear-gradient(to top,rgba(197,160,89,0.6),rgba(197,160,89,0.25));">
+                  <span class="chart-top-val" style="color:var(--accent-gold);font-size:9px;">₹3.5L</span>
+                </div>
+                <p class="chart-lbl" style="color:var(--accent-gold);">First<br>Class ✦</p>
+              </div>
+
+            </div>
+
+            <!-- Bottom label row -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid var(--border-subtle);">
+              <p style="font-size:11px;color:var(--text-secondary);">AI recommendations endorsed by</p>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span style="font-size:14px;">✨</span>
+                <span style="font-size:13px;">🤖</span>
+                <span style="font-size:13px;">🔮</span>
+              </div>
+            </div>
+            <button class="btn-dark" style="margin-top:12px;" onclick="navTo('calculate',document.getElementById('nav-calculate'))">Calculate my points →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FAQs ────────────────────────────────────── -->
+      <div style="margin:28px 20px 0;">
+        <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:16px;">Frequently Asked</h2>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">What is SweetRedeem.club?<span class="faq-arrow">›</span></div>
+          <div class="faq-a">SweetRedeem.club helps premium credit card holders (HDFC Infinia, Axis Atlas, Amex, HSBC and more) maximise the value of their reward points. We find the best transfer partners and redemption sweet spots — often 2–4× better than your bank's default portal.</div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">How are point values calculated?<span class="faq-arrow">›</span></div>
+          <div class="faq-a">We track live award availability across 30+ loyalty programmes, compare cash ticket prices, and compute the Cost Per Point (CPP) for each redemption. Values are updated frequently so you always see the freshest data.</div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Which credit cards do you support?<span class="faq-arrow">›</span></div>
+          <div class="faq-a">Currently: HDFC Infinia, HDFC Regalia, Axis Atlas, Axis Magnus, Amex Platinum Travel, HSBC Premier, and SBI Aurum. More cards are added regularly — sign up for alerts to be notified.</div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Are the redemption values guaranteed?<span class="faq-arrow">›</span></div>
+          <div class="faq-a">No. All values are estimates based on publicly available award charts and community-verified data. Actual availability and prices vary. Always verify on the loyalty programme's website before transferring points — transfers are irreversible.</div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Is SweetRedeem.club free to use?<span class="faq-arrow">›</span></div>
+          <div class="faq-a">The core discovery features are free. A premium tier with real-time alerts, CPP optimiser, and statement analysis is in the works. Sign up now to be a founding member.</div>
+        </div>
+
+      </div>
+
+      <!-- ── Terms & Conditions ─────────────────────── -->
+      <div style="margin:24px 20px 0;">
+        <div class="tnc-box">
+          <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Terms &amp; Conditions</p>
+          <p style="font-size:11px;color:var(--text-secondary);line-height:1.7;">
+            All point valuations on SweetRedeem.club are estimates based on publicly available data and community reports. Actual redemption values may vary. We are not affiliated with any bank, credit card issuer, or loyalty programme. Always verify award availability before transferring points — point transfers are irreversible. SweetRedeem.club is for informational purposes only and does not constitute financial or travel advice. By using this app you agree to our full Terms of Use.
+          </p>
+          <div class="tnc-links">
+            <span class="tnc-link">Privacy Policy</span>
+            <span class="tnc-link">Terms of Use</span>
+            <span class="tnc-link">Contact Us</span>
+            <span class="tnc-link">About</span>
+          </div>
+          <p style="font-size:10px;color:var(--text-secondary);margin-top:10px;opacity:0.6;">© 2026 SweetRedeem.club · Made with ♥ for points nerds</p>
+        </div>
+      </div>
+
+      <div style="height:24px;"></div>
+
+    </div><!-- /home -->
+
+
+    <!-- ████████████████████████████████
+         DISCOVER
+    ████████████████████████████████ -->
+    <div class="page" id="page-discover">
+
+      <div class="flex-between px" style="margin-top:20px;">
+        <div>
+          <h1 class="serif-hero" style="font-size:26px;">Discover</h1>
+          <p style="font-size:13px;color:var(--text-secondary);margin-top:3px;">Best awards right now</p>
+        </div>
+        <div class="filter-btn" style="width:38px;height:38px;border-radius:12px;">⊞</div>
+      </div>
+
+      <div class="pill-row" style="margin-top:16px;margin-bottom:20px;">
+        <div class="pill active" onclick="selPill(this)">All</div>
+        <div class="pill" onclick="selPill(this)">Business ✈️</div>
+        <div class="pill" onclick="selPill(this)">Economy</div>
+        <div class="pill" onclick="selPill(this)">Hotels</div>
+        <div class="pill" onclick="selPill(this)">Asia</div>
+        <div class="pill" onclick="selPill(this)">Europe</div>
+        <div class="pill" onclick="selPill(this)">Americas</div>
+      </div>
+
+      <!-- Deal 1 -->
+      <div class="discover-card" onclick="openSheet('s-sin')">
+        <div class="dc-img dest-sin">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55),transparent);"></div>
+          <div style="position:absolute;bottom:14px;left:16px;right:16px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.65);">via KrisFlyer</p>
+            <p style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.01em;">BOM → SIN Business</p>
+          </div>
+          <span class="badge badge-elite" style="position:absolute;top:14px;left:16px;background:rgba(0,200,133,0.9);color:#fff;border:none;">⭐ Elite</span>
+        </div>
+        <div class="dc-body">
+          <div class="value-row">
+            <div class="value-item">
+              <p class="value-label">Points</p>
+              <p class="value-num mono-num">55,000</p>
+            </div>
+            <div class="value-item">
+              <p class="value-label">Cash Value</p>
+              <p class="value-num mono-num green">₹2,10,000</p>
+            </div>
+            <div class="value-item">
+              <p class="value-label">CPP</p>
+              <p class="value-num mono-num green">₹2.10</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deal 2 — locked -->
+      <div class="discover-card" style="position:relative;" onclick="openSheet('s-cdg')">
+        <div class="dc-img dest-cdg" style="filter:blur(4px)">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55),transparent);"></div>
+          <div style="position:absolute;bottom:14px;left:16px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.65);">via Flying Blue</p>
+            <p style="font-size:20px;font-weight:800;color:#fff;">DEL → CDG Flash</p>
+          </div>
+        </div>
+        <!-- Lock overlay -->
+        <div class="lock-overlay" style="height:170px;border-radius:0;">
+          <span style="font-size:28px;">🔒</span>
+          <p style="font-size:13px;font-weight:700;color:var(--text-primary);">Members only</p>
+          <button style="background:var(--bg-overlay-dark);color:#fff;border:none;padding:8px 20px;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px;">Sign up free →</button>
+        </div>
+        <div class="dc-body" style="filter:blur(5px);pointer-events:none;">
+          <div class="value-row">
+            <div class="value-item"><p class="value-label">Points</p><p class="value-num mono-num">12,000</p></div>
+            <div class="value-item"><p class="value-label">Cash Value</p><p class="value-num mono-num green">₹35,000</p></div>
+            <div class="value-item"><p class="value-label">CPP</p><p class="value-num mono-num green">₹2.91</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deal 3 -->
+      <div class="discover-card" onclick="openSheet('s-lhr')">
+        <div class="dc-img dest-lhr">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55),transparent);"></div>
+          <div style="position:absolute;bottom:14px;left:16px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.65);">via Etihad Guest</p>
+            <p style="font-size:20px;font-weight:800;color:#fff;">BOM → LHR Business</p>
+          </div>
+          <span class="badge badge-high" style="position:absolute;top:14px;left:16px;background:rgba(0,200,133,0.7);color:#fff;border:none;">High Value</span>
+        </div>
+        <div class="dc-body">
+          <div class="value-row">
+            <div class="value-item"><p class="value-label">Points</p><p class="value-num mono-num">58,000</p></div>
+            <div class="value-item"><p class="value-label">Cash Value</p><p class="value-num mono-num green">₹2,40,000</p></div>
+            <div class="value-item"><p class="value-label">CPP</p><p class="value-num mono-num green">₹1.96</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deal 4 -->
+      <div class="discover-card" onclick="openSheet('s-hotel')">
+        <div class="dc-img dest-maldives">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.45),transparent);"></div>
+          <div style="position:absolute;bottom:14px;left:16px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.65);">via World of Hyatt</p>
+            <p style="font-size:20px;font-weight:800;color:#fff;">Park Hyatt Maldives 🏝</p>
+          </div>
+          <span class="badge badge-elite" style="position:absolute;top:14px;left:16px;background:rgba(0,200,133,0.9);color:#fff;border:none;">⭐ Elite</span>
+        </div>
+        <div class="dc-body">
+          <div class="value-row">
+            <div class="value-item"><p class="value-label">Points</p><p class="value-num mono-num">35,000</p></div>
+            <div class="value-item"><p class="value-label">Cash Value</p><p class="value-num mono-num green">₹95,000</p></div>
+            <div class="value-item"><p class="value-label">CPP</p><p class="value-num mono-num green">₹2.71</p></div>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:11px;color:var(--text-secondary);text-align:center;padding:0 30px;margin-bottom:12px;">All values are estimates. Verify availability before transferring.</p>
+
+    </div><!-- /discover -->
+
+
+    <!-- ████████████████████████████████
+         CALCULATE
+    ████████████████████████████████ -->
+    <div class="page" id="page-calculate">
+
+      <div class="px" style="margin-top:20px;">
+        <h1 class="serif-hero" style="font-size:26px;">Calculator</h1>
+        <p style="font-size:13px;color:var(--text-secondary);margin-top:3px;">See your points' true worth</p>
+      </div>
+
+      <div class="calc-surface" style="margin-top:18px;">
+        <p class="label-tag" style="margin-bottom:10px;">Select card</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="card-chip active" onclick="selChip(this,'infinia')">HDFC Infinia</div>
+          <div class="card-chip" onclick="selChip(this,'atlas')">Axis Atlas</div>
+          <div class="card-chip" onclick="selChip(this,'amex')">Amex Plat</div>
+          <div class="card-chip" onclick="selChip(this,'magnus')">Axis Magnus</div>
+          <div class="card-chip" onclick="selChip(this,'hsbc')">HSBC Premier</div>
+        </div>
+
+        <p class="label-tag" style="margin-top:16px;margin-bottom:4px;">Points balance</p>
+        <input class="pts-input" id="calcInput" type="number" placeholder="0" oninput="calcUpdate()">
+        <div class="quick-chips">
+          <div class="q-chip" onclick="setPts(10000)">10K</div>
+          <div class="q-chip" onclick="setPts(50000)">50K</div>
+          <div class="q-chip" onclick="setPts(100000)">1L</div>
+          <div class="q-chip" onclick="setPts(500000)">5L</div>
+        </div>
+
+        <!-- Value result -->
+        <div class="value-result" id="valueResult">
+          <p class="label-tag" style="margin-bottom:6px;">Best possible value</p>
+          <p class="big-val" id="bigVal">₹0</p>
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:4px;">via <span id="bestProg">KrisFlyer Business</span></p>
+          <p class="multi-tag" id="multiTag"></p>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="resultsBlock" style="display:none;">
+        <div class="section-head">
+          <span class="section-title">Transfer options</span>
+          <span class="see-all">Best first</span>
+        </div>
+
+        <div class="result-row best" onclick="openSheet('s-sin')">
+          <div class="prog-icon">✈️</div>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:700;">KrisFlyer</p>
+            <p style="font-size:11px;color:var(--text-secondary);margin-top:1px;">1:1 · Business class</p>
+          </div>
+          <div style="text-align:right;">
+            <p id="r1" class="mono-num" style="font-size:16px;color:var(--status-success);">—</p>
+            <p style="font-size:10px;color:var(--text-secondary);margin-top:1px;">₹2.10/pt</p>
+          </div>
+        </div>
+
+        <div class="result-row" onclick="openSheet('s-yyz')">
+          <div class="prog-icon">🍁</div>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:700;">Aeroplan</p>
+            <p style="font-size:11px;color:var(--text-secondary);margin-top:1px;">1:1 · Business</p>
+          </div>
+          <div style="text-align:right;">
+            <p id="r2" class="mono-num" style="font-size:16px;color:var(--status-success);">—</p>
+            <p style="font-size:10px;color:var(--text-secondary);margin-top:1px;">₹2.04/pt</p>
+          </div>
+        </div>
+
+        <div class="result-row">
+          <div class="prog-icon">🌿</div>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:700;">Flying Blue</p>
+            <p style="font-size:11px;color:var(--text-secondary);margin-top:1px;">1:1 · Economy</p>
+          </div>
+          <div style="text-align:right;">
+            <p id="r3" class="mono-num" style="font-size:16px;color:var(--status-success);">—</p>
+            <p style="font-size:10px;color:var(--text-secondary);margin-top:1px;">₹1.90/pt</p>
+          </div>
+        </div>
+
+        <div class="result-row">
+          <div class="prog-icon">🏨</div>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:700;">Marriott Bonvoy</p>
+            <p style="font-size:11px;color:var(--text-secondary);margin-top:1px;">1:1 · Hotels</p>
+          </div>
+          <div style="text-align:right;">
+            <p id="r4" class="mono-num" style="font-size:16px;color:var(--status-warn);">—</p>
+            <p style="font-size:10px;color:var(--text-secondary);margin-top:1px;">₹0.90/pt</p>
+          </div>
+        </div>
+
+        <!-- Baseline -->
+        <div style="margin-top:8px;margin-bottom:20px;">
+          <div class="baseline-box">
+            <div class="baseline-row">
+              <p style="font-size:13px;color:var(--text-secondary);">Statement Credit</p>
+              <p id="b1" class="mono-num" style="font-size:13px;color:var(--status-error);">—</p>
+            </div>
+            <div class="baseline-row">
+              <p style="font-size:13px;color:var(--text-secondary);">Bank Portal</p>
+              <p id="b2" class="mono-num" style="font-size:13px;color:var(--status-warn);">—</p>
+            </div>
+            <div class="baseline-row" style="border-bottom:none;">
+              <p style="font-size:13px;font-weight:700;">Best transfer</p>
+              <p id="b3" class="mono-num" style="font-size:13px;color:var(--status-success);font-weight:800;">—</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /calculate -->
+
+
+    <!-- ████████████████████████████████
+         CARDS
+    ████████████████████████████████ -->
+    <div class="page" id="page-cards">
+
+      <div class="px" style="margin-top:20px;">
+        <h1 class="serif-hero" style="font-size:26px;">My Arsenal</h1>
+        <p style="font-size:13px;color:var(--text-secondary);margin-top:3px;">Transfer routes &amp; optimal uses</p>
+      </div>
+
+      <!-- Card carousel -->
+      <div style="margin-top:18px;padding:0 20px;margin-bottom:6px;">
+        <p class="label-tag">Tap to explore</p>
+      </div>
+      <div class="card-scroll">
+        <div class="cc-card cc-infinia selected" onclick="selCard(this,'HDFC Infinia','HDFC Bank','₹2.10/pt','₹0.50/pt','4.2×','1:1 ratio')">
+          <div style="position:absolute;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="width:34px;height:24px;background:rgba(37,99,235,0.4);border-radius:5px;border:1px solid rgba(37,99,235,0.3);"></div>
+              <span style="font-size:9px;font-weight:800;color:#93C5FD;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.25);padding:3px 8px;border-radius:100px;">ULTRA PREMIUM</span>
+            </div>
+            <div>
+              <p style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.01em;">HDFC Infinia</p>
+              <p style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;">HDFC Bank · Reward Points</p>
+              <p style="font-size:13px;color:#4ADE80;font-weight:700;margin-top:6px;">Best CPP: ₹2.10/pt</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-card cc-atlas" onclick="selCard(this,'Axis Atlas','Axis Bank','₹1.85/pt','₹0.42/pt','4.4×','5:2 ratio')">
+          <div style="position:absolute;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="width:34px;height:24px;background:rgba(124,58,237,0.4);border-radius:5px;"></div>
+              <span style="font-size:9px;font-weight:800;color:#C4B5FD;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.25);padding:3px 8px;border-radius:100px;">PREMIUM</span>
+            </div>
+            <div>
+              <p style="font-size:16px;font-weight:800;color:#fff;">Axis Atlas</p>
+              <p style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;">Axis Bank · EDGE Miles</p>
+              <p style="font-size:13px;color:#4ADE80;font-weight:700;margin-top:6px;">Best CPP: ₹1.85/pt</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-card cc-amex" onclick="selCard(this,'Amex Platinum','American Express','₹1.60/pt','₹0.45/pt','3.6×','2:1 Avios')">
+          <div style="position:absolute;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="width:34px;height:24px;background:rgba(217,119,6,0.4);border-radius:5px;"></div>
+              <span style="font-size:9px;font-weight:800;color:#FCD34D;background:rgba(217,119,6,0.15);border:1px solid rgba(217,119,6,0.25);padding:3px 8px;border-radius:100px;">ULTRA PREMIUM</span>
+            </div>
+            <div>
+              <p style="font-size:16px;font-weight:800;color:#fff;">Amex Platinum</p>
+              <p style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;">American Express · MR</p>
+              <p style="font-size:13px;color:#4ADE80;font-weight:700;margin-top:6px;">Best CPP: ₹1.60/pt</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-card cc-hsbc" onclick="selCard(this,'HSBC Premier','HSBC Bank','₹1.80/pt','₹0.50/pt','3.6×','1:1 ratio')">
+          <div style="position:absolute;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="width:34px;height:24px;background:rgba(16,185,129,0.4);border-radius:5px;"></div>
+              <span style="font-size:9px;font-weight:800;color:#6EE7B7;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);padding:3px 8px;border-radius:100px;">FREE CARD</span>
+            </div>
+            <div>
+              <p style="font-size:16px;font-weight:800;color:#fff;">HSBC Premier</p>
+              <p style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;">HSBC Bank · No fee</p>
+              <p style="font-size:13px;color:#4ADE80;font-weight:700;margin-top:6px;">Best CPP: ₹1.80/pt</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card info panel -->
+      <div class="card-info-panel">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <p id="cName" style="font-size:18px;font-weight:800;">HDFC Infinia</p>
+            <p id="cIssuer" style="font-size:12px;color:var(--text-secondary);margin-top:2px;">HDFC Bank</p>
+          </div>
+          <div style="text-align:right;">
+            <p class="label-tag">Multiplier</p>
+            <p id="cMulti" style="font-size:24px;font-weight:900;color:var(--status-success);">4.2×</p>
+          </div>
+        </div>
+        <div class="card-stats-grid">
+          <div class="stat-box">
+            <p class="label-tag">Best CPP</p>
+            <p id="cBest" class="mono-num" style="font-size:18px;color:var(--status-success);margin-top:4px;">₹2.10/pt</p>
+          </div>
+          <div class="stat-box">
+            <p class="label-tag">Cash CPP</p>
+            <p id="cCash" class="mono-num" style="font-size:18px;color:var(--status-error);margin-top:4px;">₹0.50/pt</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transfer routes -->
+      <div class="section-head">
+        <span class="section-title">Transfer routes</span>
+        <span id="cRatio" style="font-size:12px;color:var(--text-secondary);font-weight:600;">1:1 ratio</span>
+      </div>
+
+      <div class="tx-row">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="tx-icon">✈️</div>
+          <div><p style="font-size:14px;font-weight:700;">KrisFlyer</p><p style="font-size:11px;color:var(--text-secondary);">Singapore Airlines</p></div>
+        </div>
+        <div style="text-align:right;"><span class="badge badge-elite">Elite</span><p class="mono-num" style="font-size:13px;color:var(--status-success);margin-top:4px;">₹2.10/pt</p></div>
+      </div>
+      <div class="tx-row">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="tx-icon">🍁</div>
+          <div><p style="font-size:14px;font-weight:700;">Aeroplan</p><p style="font-size:11px;color:var(--text-secondary);">Air Canada</p></div>
+        </div>
+        <div style="text-align:right;"><span class="badge badge-elite">Elite</span><p class="mono-num" style="font-size:13px;color:var(--status-success);margin-top:4px;">₹2.04/pt</p></div>
+      </div>
+      <div class="tx-row">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="tx-icon">🌿</div>
+          <div><p style="font-size:14px;font-weight:700;">Flying Blue</p><p style="font-size:11px;color:var(--text-secondary);">Air France / KLM</p></div>
+        </div>
+        <div style="text-align:right;"><span class="badge badge-elite">Elite</span><p class="mono-num" style="font-size:13px;color:var(--status-success);margin-top:4px;">₹1.90/pt</p></div>
+      </div>
+      <div class="tx-row">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="tx-icon">🏨</div>
+          <div><p style="font-size:14px;font-weight:700;">Marriott Bonvoy</p><p style="font-size:11px;color:var(--text-secondary);">Hotels</p></div>
+        </div>
+        <div style="text-align:right;"><span class="badge badge-good">Good</span><p class="mono-num" style="font-size:13px;color:var(--status-warn);margin-top:4px;">₹0.90/pt</p></div>
+      </div>
+      <div class="tx-row" style="background:rgba(224,62,62,0.03);border-color:rgba(224,62,62,0.15);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="tx-icon" style="background:rgba(224,62,62,0.06);">💸</div>
+          <div><p style="font-size:14px;font-weight:700;">Statement Credit</p><p style="font-size:11px;color:var(--text-secondary);">Worst option</p></div>
+        </div>
+        <div style="text-align:right;"><span class="badge badge-poor">Poor</span><p class="mono-num" style="font-size:13px;color:var(--status-error);margin-top:4px;">₹0.50/pt</p></div>
+      </div>
+      <div style="height:8px;"></div>
+
+    </div><!-- /cards -->
+
+
+    <!-- ████████████████████████████████
+         DESIGN TOKENS
+    ████████████████████████████████ -->
+    <div class="page" id="page-design">
+      <div class="px" style="margin-top:20px;">
+        <h1 class="serif-hero" style="font-size:22px;">Design System V3</h1>
+        <p style="font-size:12px;color:var(--text-secondary);margin-top:3px;">Quiet Luxury · Light Theme</p>
+      </div>
+
+      <div class="section-head" style="margin-top:20px;"><span class="section-title" style="font-size:15px;">Colours</span></div>
+      <div class="swatch-grid">
+        <div class="swatch" style="background:#F9F6F0;"><span style="color:#999;">#F9F6F0<br>Canvas</span></div>
+        <div class="swatch" style="background:#FFFFFF;"><span style="color:#bbb;">#FFFFFF<br>Surface</span></div>
+        <div class="swatch" style="background:#121212;"><span style="color:#fff;">#121212<br>Dark CTA</span></div>
+      </div>
+      <div class="swatch-grid">
+        <div class="swatch" style="background:#00C885;"><span style="color:rgba(0,0,0,0.5);">#00C885<br>Success</span></div>
+        <div class="swatch" style="background:#C5A059;"><span style="color:rgba(0,0,0,0.5);">#C5A059<br>Gold</span></div>
+        <div class="swatch" style="background:#EAEAEA;"><span style="color:#999;">#EAEAEA<br>Border</span></div>
+      </div>
+
+      <div class="section-head"><span class="section-title" style="font-size:15px;">Typography</span></div>
+      <div style="padding:0 20px;display:flex;flex-direction:column;gap:8px;">
+        <p style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:-0.02em;">Serif Heading · 700</p>
+        <p style="font-size:17px;font-weight:700;">Section Title · 700</p>
+        <p style="font-size:13px;color:var(--text-secondary);">Body secondary · 400</p>
+        <p class="label-tag">Label uppercase · 700</p>
+        <p class="mono-num" style="font-size:20px;color:var(--status-success);">₹2,10,000 tabular</p>
+      </div>
+
+      <div class="section-head"><span class="section-title" style="font-size:15px;">Components</span></div>
+      <div style="padding:0 20px;display:flex;flex-direction:column;gap:12px;">
+        <button class="btn-dark" style="margin-top:0;">Primary Dark CTA</button>
+        <button class="btn-dark btn-green" style="margin-top:0;">Success CTA</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="badge badge-elite">Elite</span>
+          <span class="badge badge-high">High Value</span>
+          <span class="badge badge-good">Good</span>
+          <span class="badge badge-poor">Poor</span>
+          <span class="badge badge-flash">⚡ Flash</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div class="pill active">Active</div>
+          <div class="pill">Inactive</div>
+        </div>
+        <div class="pts-pill" style="width:fit-content;">✦ 1,24,500 pts</div>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+
+  </div><!-- /screen -->
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="navTo('home',this)">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" id="nav-discover" onclick="navTo('discover',this)">
+      <span class="nav-icon">🔍</span>
+      <span class="nav-label">Discover</span>
+    </button>
+    <button class="nav-item" id="nav-calculate" onclick="navTo('calculate',this)">
+      <span class="nav-icon">⚡</span>
+      <span class="nav-label">Calculate</span>
+    </button>
+    <button class="nav-item" id="nav-cards" onclick="navTo('cards',this)">
+      <span class="nav-icon">💳</span>
+      <span class="nav-label">Cards</span>
+    </button>
+  </nav>
+</div><!-- /phone -->
+
+
+<!-- ════════════════════════════════════
+     BOTTOM SHEETS
+════════════════════════════════════ -->
+
+<!-- BOM→SIN -->
+<div class="sheet-overlay" id="s-sin">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-sin">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);border-radius:16px;"></div>
+      <div style="position:absolute;bottom:16px;left:18px;right:18px;">
+        <p style="font-size:11px;color:rgba(255,255,255,0.65);">Singapore Airlines · KrisFlyer</p>
+        <p style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">BOM → SIN</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px;">Business Class · Suites</p>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('s-sin')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div><span class="badge badge-elite" style="margin-bottom:8px;display:inline-flex;">⭐ Elite value deal</span><br>
+          <span class="mono-num" style="font-size:30px;color:var(--status-success);">₹2,10,000</span>
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:2px;">estimated cash value</p>
+        </div>
+        <div style="text-align:right;">
+          <p class="label-tag">Points</p>
+          <p class="mono-num" style="font-size:22px;margin-top:3px;">55,000</p>
+          <p style="font-size:11px;color:var(--status-success);margin-top:2px;">₹2.10 per point</p>
+        </div>
+      </div>
+      <div class="detail-list">
+        <div class="detail-row"><span class="detail-key">Program</span><span class="detail-val">KrisFlyer</span></div>
+        <div class="detail-row"><span class="detail-key">Transfer ratio</span><span class="detail-val" style="color:var(--status-success);">1:1 (no loss)</span></div>
+        <div class="detail-row"><span class="detail-key">Processing time</span><span class="detail-val">24–48 hrs</span></div>
+        <div class="detail-row"><span class="detail-key">vs Statement Credit</span><span class="detail-val" style="color:var(--status-success);">+4.2× better</span></div>
+        <div class="detail-row"><span class="detail-key">Last verified</span><span class="detail-val">March 2026</span></div>
+      </div>
+      <div class="warn-box">⚠️ <strong>Always verify award availability</strong> before transferring. Transfers are irreversible — check KrisFlyer.com first.</div>
+      <button class="btn-dark" onclick="closeSheet('s-sin')" style="margin-top:14px;">Open KrisFlyer →</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEL→CDG -->
+<div class="sheet-overlay" id="s-cdg">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-cdg">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);border-radius:16px;"></div>
+      <div style="position:absolute;bottom:16px;left:18px;right:18px;">
+        <p style="font-size:11px;color:rgba(255,255,255,0.65);">Air France · Flying Blue</p>
+        <p style="font-size:22px;font-weight:800;color:#fff;">DEL → CDG</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px;">Economy · Flash Sale ⚡</p>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('s-cdg')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <span class="badge badge-flash" style="margin-bottom:12px;display:inline-flex;">⚡ Flash Sale — limited time</span>
+      <p class="mono-num" style="font-size:30px;color:var(--status-success);">₹35,000</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin-top:2px;margin-bottom:14px;">12,000 pts · ₹2.91/pt</p>
+      <div class="detail-list">
+        <div class="detail-row"><span class="detail-key">Program</span><span class="detail-val">Flying Blue</span></div>
+        <div class="detail-row"><span class="detail-key">Transfer ratio</span><span class="detail-val" style="color:var(--status-success);">1:1</span></div>
+        <div class="detail-row"><span class="detail-key">Sale ends</span><span class="detail-val" style="color:var(--status-error);">~3 days</span></div>
+      </div>
+      <button class="btn-dark" onclick="closeSheet('s-cdg')" style="margin-top:4px;">Open Flying Blue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOM→LHR -->
+<div class="sheet-overlay" id="s-lhr">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-lhr">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);border-radius:16px;"></div>
+      <div style="position:absolute;bottom:16px;left:18px;right:18px;">
+        <p style="font-size:11px;color:rgba(255,255,255,0.65);">Etihad Airways · Etihad Guest</p>
+        <p style="font-size:22px;font-weight:800;color:#fff;">BOM → LHR</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px;">Business Studio</p>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('s-lhr')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <p class="mono-num" style="font-size:30px;color:var(--status-success);">₹2,40,000</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin-top:2px;margin-bottom:14px;">58,000 pts · ₹1.96/pt</p>
+      <div class="detail-list">
+        <div class="detail-row"><span class="detail-key">Program</span><span class="detail-val">Etihad Guest</span></div>
+        <div class="detail-row"><span class="detail-key">Transfer ratio (HDFC)</span><span class="detail-val" style="color:var(--status-success);">1:1</span></div>
+        <div class="detail-row"><span class="detail-key">vs Statement Credit</span><span class="detail-val" style="color:var(--status-success);">+3.9× better</span></div>
+      </div>
+      <button class="btn-dark" onclick="closeSheet('s-lhr')" style="margin-top:4px;">Open Etihad Guest →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Maldives Hotel -->
+<div class="sheet-overlay" id="s-hotel">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-maldives">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent);border-radius:16px;"></div>
+      <div style="position:absolute;bottom:16px;left:18px;right:18px;">
+        <p style="font-size:11px;color:rgba(255,255,255,0.65);">World of Hyatt</p>
+        <p style="font-size:22px;font-weight:800;color:#fff;">Park Hyatt Maldives</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px;">Park Panoramic · per night</p>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('s-hotel')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <span class="badge badge-elite" style="margin-bottom:12px;display:inline-flex;">⭐ Highest CPP hotel deal</span>
+      <p class="mono-num" style="font-size:30px;color:var(--status-success);">₹95,000</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin-top:2px;margin-bottom:14px;">35,000 pts · ₹2.71/pt</p>
+      <div class="detail-list">
+        <div class="detail-row"><span class="detail-key">Program</span><span class="detail-val">World of Hyatt</span></div>
+        <div class="detail-row"><span class="detail-key">Category</span><span class="detail-val">Cat 8 · 35K peak</span></div>
+        <div class="detail-row"><span class="detail-key">vs cash rate</span><span class="detail-val" style="color:var(--status-success);">Save ₹60,000</span></div>
+      </div>
+      <button class="btn-dark" onclick="closeSheet('s-hotel')" style="margin-top:4px;">Open World of Hyatt →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOM→YYZ -->
+<div class="sheet-overlay" id="s-yyz">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-img dest-yyz">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);border-radius:16px;"></div>
+      <div style="position:absolute;bottom:16px;left:18px;right:18px;">
+        <p style="font-size:11px;color:rgba(255,255,255,0.65);">Air Canada · Aeroplan</p>
+        <p style="font-size:22px;font-weight:800;color:#fff;">BOM → YYZ</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px;">Business Class</p>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('s-yyz')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <p class="mono-num" style="font-size:30px;color:var(--status-success);">₹2,50,000</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin-top:2px;margin-bottom:14px;">70,000 pts · ₹2.04/pt · 1:1 ratio</p>
+      <div class="detail-list">
+        <div class="detail-row"><span class="detail-key">Program</span><span class="detail-val">Aeroplan</span></div>
+        <div class="detail-row"><span class="detail-key">Transfer ratio (HDFC)</span><span class="detail-val" style="color:var(--status-success);">1:1</span></div>
+        <div class="detail-row"><span class="detail-key">vs Statement Credit</span><span class="detail-val" style="color:var(--status-success);">+4.1× better</span></div>
+        <div class="detail-row"><span class="detail-key">Last verified</span><span class="detail-val">March 2026</span></div>
+      </div>
+      <button class="btn-dark" onclick="closeSheet('s-yyz')" style="margin-top:4px;">Open Aeroplan →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════ -->
+<script>
+// ── Page routing ─────────────────────────────────────────
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+  document.getElementById('mainScreen').scrollTop = 0;
+}
+function navTo(name, el) {
+  showPage(name);
+  el.classList.add('active');
+  const tab = document.querySelector(`.demo-tab[onclick="showPage('${name}',this)"]`);
+  if (tab) tab.classList.add('active');
+}
+
+// ── Pill / chip selection ────────────────────────────────
+function selPill(el) {
+  el.closest('.pill-row').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Calculator ───────────────────────────────────────────
+const CARDS = {
+  infinia: { kris:2.10, aero:2.04, fb:1.90, hotel:0.90, cash:0.50 },
+  atlas:   { kris:1.68, aero:1.85, fb:1.52, hotel:0.70, cash:0.42 },
+  amex:    { kris:0,    aero:0,    fb:0,    hotel:0.95, cash:0.45 },
+  magnus:  { kris:1.68, aero:1.88, fb:1.92, hotel:0.80, cash:0.42 },
+  hsbc:    { kris:2.10, aero:0,    fb:1.90, hotel:0,    cash:0.50 },
+};
+let activeCard = 'infinia';
+
+function selChip(el, card) {
+  document.querySelectorAll('.card-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeCard = card;
+  calcUpdate();
+}
+function setPts(n) {
+  document.getElementById('calcInput').value = n;
+  calcUpdate();
+}
+function fmt(n) {
+  if (!n) return '—';
+  if (n >= 100000) return '₹' + (n/100000).toFixed(1).replace(/\.0$/,'') + 'L';
+  if (n >= 1000) return '₹' + Math.round(n/1000) + 'K';
+  return '₹' + n;
+}
+function calcUpdate() {
+  const pts = parseInt(document.getElementById('calcInput').value) || 0;
+  const show = pts > 0;
+  document.getElementById('valueResult').classList.toggle('show', show);
+  document.getElementById('resultsBlock').style.display = show ? '' : 'none';
+  if (!show) return;
+
+  const c = CARDS[activeCard];
+  const kV  = Math.floor(pts * c.kris);
+  const aV  = Math.floor(pts * c.aero);
+  const fbV = Math.floor(pts * c.fb);
+  const hV  = Math.floor(pts * c.hotel);
+  const cV  = Math.floor(pts * c.cash);
+  const pV  = Math.floor(pts * c.cash * 1.3);
+  const best = Math.max(kV, aV, fbV, hV);
+  const bProg = kV >= aV && kV >= fbV ? 'KrisFlyer Business' : aV >= fbV ? 'Aeroplan Business' : 'Flying Blue Economy';
+
+  document.getElementById('bigVal').textContent = fmt(best);
+  document.getElementById('bestProg').textContent = bProg;
+  document.getElementById('multiTag').textContent = cV > 0 ? (best/cV).toFixed(1) + '× better than statement credit' : '';
+  document.getElementById('r1').textContent = fmt(kV);
+  document.getElementById('r2').textContent = fmt(aV);
+  document.getElementById('r3').textContent = fmt(fbV);
+  document.getElementById('r4').textContent = fmt(hV);
+  document.getElementById('b1').textContent = fmt(cV);
+  document.getElementById('b2').textContent = fmt(pV);
+  document.getElementById('b3').textContent = fmt(best);
+}
+
+// ── Cards page ───────────────────────────────────────────
+function selCard(el, name, issuer, best, cash, multi, ratio) {
+  document.querySelectorAll('.cc-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('cName').textContent = name;
+  document.getElementById('cIssuer').textContent = issuer;
+  document.getElementById('cBest').textContent = best;
+  document.getElementById('cCash').textContent = cash;
+  document.getElementById('cMulti').textContent = multi;
+  document.getElementById('cRatio').textContent = ratio;
+}
+
+// ── Bottom sheets ─────────────────────────────────────────
+function openSheet(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.sheet-overlay').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) { o.classList.remove('open'); document.body.style.overflow = ''; }
+  });
+});
+
+// ── Login toggle (demo) ──────────────────────────────────
+let isLoggedIn = false;
+function toggleLogin() {
+  isLoggedIn = !isLoggedIn;
+  const lo = document.getElementById('hdr-loggedout');
+  const li = document.getElementById('hdr-loggedin');
+  const lbl = document.getElementById('loginToggleLabel');
+  if (isLoggedIn) {
+    lo.style.display = 'none';
+    li.style.display = 'flex';
+    lbl.textContent = '← Switch to logged-out';
+  } else {
+    lo.style.display = 'flex';
+    li.style.display = 'none';
+    lbl.textContent = 'Switch to logged-in →';
+  }
+}
+
+// ── Rotating showcase animation ──────────────────────────
+const SHOWCASE = [
+  { pts: '50K',  card: 'HDFC Infinia',        deal: 'flight', value: 240000 },
+  { pts: '20K',  card: 'Axis Atlas',           deal: 'hotel',  value: 104000 },
+  { pts: '100K', card: 'Amex Travel Platinum', deal: 'flight', value: 175000 },
+];
+let scIdx      = 0;
+let countRaf   = null; // track active rAF to cancel if overlapping
+
+const elSentence = document.getElementById('anim-sentence');
+const elPts      = document.getElementById('anim-pts');
+const elCard     = document.getElementById('anim-card');
+const elDeal     = document.getElementById('anim-deal');
+const elVal      = document.getElementById('anim-value');
+
+// Format as Indian ₹ e.g. 240000 → ₹2,40,000
+function fmtINR(n) {
+  return '₹' + n.toLocaleString('en-IN');
+}
+
+// Smooth count-up from current displayed value to target (~1.4s, ease-out cubic)
+function countUp(target) {
+  if (countRaf) cancelAnimationFrame(countRaf);
+
+  // Parse current value shown (strip ₹ and commas)
+  const rawCurrent = elVal.textContent.replace(/[₹,]/g, '').trim();
+  const startVal = parseInt(rawCurrent, 10) || 0;
+  const duration = 1400; // ms — slow, smooth
+  const startTime = performance.now();
+
+  function tick(now) {
+    const elapsed  = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease-out cubic
+    const eased    = 1 - Math.pow(1 - progress, 3);
+    const current  = Math.round(startVal + (target - startVal) * eased);
+    elVal.textContent = fmtINR(current);
+    if (progress < 1) {
+      countRaf = requestAnimationFrame(tick);
+    } else {
+      elVal.textContent = fmtINR(target);
+      countRaf = null;
+    }
+  }
+  countRaf = requestAnimationFrame(tick);
+}
+
+// Transition: fade whole sentence out (1.5s), swap words, fade back in (1.5s)
+// Value counts up continuously — no fade
+const FADE_DURATION = 1500; // ms — matches CSS transition
+
+function nextSlide() {
+  scIdx = (scIdx + 1) % SHOWCASE.length;
+  const data = SHOWCASE[scIdx];
+
+  // 1. Fade out sentence
+  elSentence.style.opacity = '0';
+
+  // 2. After fade-out completes, swap words and fade back in
+  setTimeout(() => {
+    elPts.textContent  = data.pts;
+    elCard.textContent = data.card;
+    elDeal.textContent = data.deal;
+    elSentence.style.opacity = '1';
+  }, FADE_DURATION);
+
+  // 3. Count-up starts at fade midpoint for a natural feel
+  setTimeout(() => countUp(data.value), FADE_DURATION * 0.6);
+}
+
+// Bootstrap on load
+window.addEventListener('DOMContentLoaded', () => {
+  const first = SHOWCASE[0];
+  elPts.textContent  = first.pts;
+  elCard.textContent = first.card;
+  elDeal.textContent = first.deal;
+  // Initial count-up from 0
+  elVal.textContent = fmtINR(0);
+  countUp(first.value);
+  // Rotate every 4 seconds
+  setInterval(nextSlide, 4000);
+});
+
+// ── Deal of the Day selector ─────────────────────────
+const DOTD_DEALS = [
+  { id: 'dotd-0', label: 'DEL→BKK · Flying Blue' },
+  { id: 'dotd-1', label: 'Statement Credit' },
+  { id: 'dotd-2', label: 'BOM→CDG · Flying Blue' },
+  { id: 'dotd-3', label: 'BOM→SIN · KrisFlyer' },
+];
+let activeDotD = 2; // default is index 2
+
+function selDotD(el, idx) {
+  // Update pill selection
+  document.querySelectorAll('.dotd-opt').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+
+  // Hide all deal cards, show selected
+  document.querySelectorAll('.dotd-deal').forEach(d => d.style.display = 'none');
+  document.getElementById(DOTD_DEALS[idx].id).style.display = '';
+
+  // Update label in header
+  const lbl = document.getElementById('dotd-card-label');
+  if (lbl) lbl.textContent = DOTD_DEALS[idx].label;
+
+  activeDotD = idx;
+}
+
+// ── FAQ accordion ─────────────────────────────────────
+function toggleFaq(el) {
+  // Close siblings, open this one (or close if already open)
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+</script>
+</body>
+</html>

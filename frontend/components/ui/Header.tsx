@@ -2,15 +2,12 @@
 
 // ============================================================
 // Header — auth-aware client component
+// Figma-matched: white background, clean minimal nav
 //
 // States:
 //   loading  → no CTA shown (avoids sign-in/sign-out flicker on load)
-//   signed-out → "Sign in →" pill
-//   signed-in  → user initial avatar + email chip + "Sign out" on tap
-//
-// Uses supabase.auth.onAuthStateChange so it reacts instantly after
-// a magic link is clicked (session is set by the Supabase client from
-// the URL hash, triggering SIGNED_IN here automatically).
+//   signed-out → "Sign up →" pill (dark bg)
+//   signed-in  → user initial avatar + "Sign out" on tap
 // ============================================================
 
 import { useEffect, useState } from 'react';
@@ -24,13 +21,11 @@ export default function Header() {
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
-    // Initialise from existing session (handles magic-link hash on first load)
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
       setAuthLoading(false);
     });
 
-    // Keep in sync for the duration of the session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
@@ -43,16 +38,11 @@ export default function Header() {
     setSigningOut(true);
     await supabase.auth.signOut();
     setSigningOut(false);
-    // onAuthStateChange fires → sets user to null → CTA flips back to "Sign in"
   }
 
-  // User's display initial (first char of email or display name)
   const initial = user?.email?.[0]?.toUpperCase() ?? '?';
-  // Abbreviated email for the chip (trim to 20 chars)
   const emailShort = user?.email
-    ? user.email.length > 22
-      ? user.email.slice(0, 20) + '…'
-      : user.email
+    ? user.email.length > 22 ? user.email.slice(0, 20) + '…' : user.email
     : '';
 
   return (
@@ -60,10 +50,10 @@ export default function Header() {
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      background: 'rgba(249,246,240,0.92)',
+      background: 'rgba(255,255,255,0.95)',
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
-      borderBottom: '1px solid #EAEAEA',
+      borderBottom: '1px solid #F0F0F0',
     }}>
       <div style={{
         maxWidth: 480,
@@ -77,23 +67,33 @@ export default function Header() {
 
         {/* ── Wordmark ─────────────────────────────────────── */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none' }}>
+          {/* Brand icon: dark square with gold star */}
           <span style={{
             width: 28, height: 28, borderRadius: 8,
             background: '#121212',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
           }}>
-            <span style={{ fontSize: 14, color: '#C5A059' }}>✦</span>
+            <span style={{ fontSize: 13, color: '#C5A059', lineHeight: 1 }}>✦</span>
           </span>
-          <span style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.02em', color: '#000' }}>
-            SweetRedeem<span style={{ color: '#C5A059' }}>.club</span>
+          {/* Brand name */}
+          <span style={{
+            fontSize: 15,
+            fontWeight: 800,
+            letterSpacing: '-0.025em',
+            color: '#0A0A0A',
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}>
+            SweetRedeem
+            <span style={{ color: '#C5A059' }}>.club</span>
           </span>
         </Link>
 
         {/* ── Right CTA ─────────────────────────────────────── */}
         {authLoading ? (
-          /* Skeleton placeholder — no CTA flicker */
-          <div style={{ width: 72, height: 28, borderRadius: 9999, background: '#EAEAEA' }} />
+          /* Skeleton */
+          <div style={{ width: 72, height: 30, borderRadius: 9999, background: '#F0F0F0' }} />
 
         ) : user ? (
           /* Signed-in state */
@@ -103,25 +103,25 @@ export default function Header() {
               width: 30, height: 30, borderRadius: '50%',
               background: '#121212',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13, fontWeight: 800, color: '#C5A059',
+              fontSize: 12, fontWeight: 800, color: '#C5A059',
               flexShrink: 0,
             }}>
               {initial}
             </div>
-
-            {/* Sign-out button */}
+            {/* Sign-out */}
             <button
               onClick={handleSignOut}
               disabled={signingOut}
               style={{
-                padding: '6px 12px',
+                padding: '6px 13px',
                 borderRadius: 9999,
                 background: 'transparent',
-                border: '1px solid #EAEAEA',
-                color: '#666',
-                fontSize: 12, fontWeight: 700,
+                border: '1px solid #E8E8E8',
+                color: '#555',
+                fontSize: 12, fontWeight: 600,
                 cursor: signingOut ? 'wait' : 'pointer',
-                transition: 'all 0.12s',
+                fontFamily: "'Inter', system-ui, sans-serif",
+                transition: 'border-color 0.15s',
               }}
               title={`Signed in as ${emailShort}`}
             >
@@ -130,18 +130,21 @@ export default function Header() {
           </div>
 
         ) : (
-          /* Signed-out state */
+          /* Signed-out state — dark pill CTA matching Figma */
           <Link
             href="/signup"
             style={{
-              padding: '7px 16px',
+              padding: '8px 18px',
               borderRadius: 9999,
               background: '#121212',
-              color: '#fff',
-              fontSize: 13, fontWeight: 700,
+              color: '#FFFFFF',
+              fontSize: 13,
+              fontWeight: 700,
               textDecoration: 'none',
               letterSpacing: '-0.01em',
+              fontFamily: "'Inter', system-ui, sans-serif",
               boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+              transition: 'opacity 0.15s',
             }}
           >
             Sign up →

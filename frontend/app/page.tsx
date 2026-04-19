@@ -1,30 +1,28 @@
 // ============================================================
-// SweetRedeem.club — Home Page
-// Server Component: fetches top deals from Supabase at request
-// time (ISR with 5-min revalidation).
+// SweetRedeem.club — Home Page (Figma V3 design)
+// Server Component with ISR (5-min revalidation)
 // ============================================================
 
 import { Suspense } from 'react';
 import { fetchSweetSpots } from '@/lib/supabase-queries';
-import HeroSection      from '@/components/home/HeroSection';
-import MilestoneTracker from '@/components/home/MilestoneTracker';
-import DealOfTheDay     from '@/components/home/DealOfTheDay';
-import CuratedDeals     from '@/components/home/CuratedDeals';
-import MyCardsSection   from '@/components/home/MyCardsSection';
-import StatStrip        from '@/components/home/StatStrip';
-import NewsletterSignup from '@/components/home/NewsletterSignup';
-import RewardUnlocked   from '@/components/home/RewardUnlocked';
-import ValueComparison  from '@/components/home/ValueComparison';
-import FaqSection       from '@/components/home/FaqSection';
-import TncSection       from '@/components/home/TncSection';
+
+// ── Home sections ──────────────────────────────────────────
+import HeroSection         from '@/components/home/HeroSection';
+import DealOfTheDay        from '@/components/home/DealOfTheDay';
+import CuratedDeals        from '@/components/home/CuratedDeals';
+import DestinationsSection from '@/components/home/DestinationsSection';
+import RTBSection          from '@/components/home/RTBSection';
+import OnboardingTeaser    from '@/components/home/OnboardingTeaser';
+import FaqSection          from '@/components/home/FaqSection';
+import TncSection          from '@/components/home/TncSection';
+
 import type { SweetSpotRow } from '@/lib/database.types';
 
 // Revalidate every 5 minutes (ISR)
 export const revalidate = 300;
 
 // ── Fallback mock data ────────────────────────────────────────
-// Used when Supabase is not yet provisioned, so the page still
-// renders correctly during local development.
+// Used when Supabase is not yet provisioned (local dev)
 const MOCK_SPOTS: SweetSpotRow[] = [
   {
     id: 'mock-sin',    program_id: 'krisflyer', program_name: 'KrisFlyer',      program_type: 'flight',
@@ -76,52 +74,31 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ── Hero animated showcase ────────────────────── */}
+      {/* ── 1. Hero — headline + stats ────────────────────── */}
       <HeroSection />
 
-      {/* ── 3-step milestone tracker ─────────────────── */}
-      <MilestoneTracker />
-
-      {/* ── Deal of the Day + points selector ────────── */}
+      {/* ── 2. Deal of the Day — carousel ────────────────── */}
       <DealOfTheDay spots={spots} />
 
-      {/* ── Curated for you — Roame-style cards ──────── */}
+      {/* ── 3. Sweet-spots — curated deal cards ──────────── */}
       <Suspense fallback={<div style={{ height: 200 }} />}>
         <CuratedDeals spots={spots} />
       </Suspense>
 
-      {/* ── Points Wallet (signed-in users only) ──────── */}
-      <div style={{ margin: '24px 20px 0' }}>
-        <MyCardsSection />
-      </div>
+      {/* ── 4. Destinations — horizontal city scroll ─────── */}
+      <DestinationsSection />
 
-      {/* ── Stats strip ──────────────────────────────── */}
-      <div style={{ margin: '24px 20px 0' }}>
-        <StatStrip />
-      </div>
+      {/* ── 5. RTB — "Why it works" features ─────────────── */}
+      <RTBSection />
 
-      {/* ── Newsletter / Get Alerts ───────────────────── */}
-      <div style={{ margin: '20px 20px 0' }}>
-        <NewsletterSignup />
-      </div>
+      {/* ── 6. Onboarding teaser — "Fly at the front" ───── */}
+      <OnboardingTeaser />
 
-      {/* ── Reward Unlocked ───────────────────────────── */}
-      <div style={{ margin: '14px 20px 0' }}>
-        <RewardUnlocked />
-      </div>
+      {/* ── 7. FAQ — "Decoding the Club" ─────────────────── */}
+      <FaqSection />
 
-      {/* ── Points value comparison ───────────────────── */}
-      <div style={{ margin: '24px 20px 0' }}>
-        <ValueComparison />
-      </div>
-
-      {/* ── FAQs ──────────────────────────────────────── */}
-      <div style={{ margin: '28px 20px 0' }}>
-        <FaqSection />
-      </div>
-
-      {/* ── Terms & Conditions ────────────────────────── */}
-      <div style={{ margin: '24px 20px 24px' }}>
+      {/* ── 8. Terms notice ──────────────────────────────── */}
+      <div style={{ padding: '24px 20px 8px' }}>
         <TncSection />
       </div>
     </>

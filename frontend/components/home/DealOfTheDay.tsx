@@ -1,194 +1,365 @@
 'use client';
 
 // ============================================================
-// DealOfTheDay — interactive 2×2 points selector grid
-// tapping a tile swaps the deal card below.
+// DealOfTheDay — Figma-matched carousel
+// City photo · dark info panel · points pills · VS comparison card
 // ============================================================
 
 import { useState } from 'react';
 import type { SweetSpotRow } from '@/lib/database.types';
-import { formatINRFull, formatPoints } from '@/lib/supabase-queries';
 
-const SELECTOR_OPTIONS = [
-  { pts: 10000,  label: '10,000 pts',   value: 15000,   sublabel: 'DEL → BKK Economy',  tier: 'warn'    },
-  { pts: 20000,  label: '20,000 pts',   value: 10000,   sublabel: 'Statement Credit',    tier: 'error'   },
-  { pts: 45000,  label: '45,000 pts',   value: 85000,   sublabel: 'BOM → CDG Economy',  tier: 'success' },
-  { pts: 100000, label: '1,00,000 pts', value: 240000,  sublabel: 'BOM → SIN Business', tier: 'success' },
+// ── Figma CDN assets (valid 7 days — swap for your own CDN URLs) ──
+// City background images
+const CITY_IMGS = [
+  'https://www.figma.com/api/mcp/asset/86d80ae8-cc5a-4b75-bb60-618ba7d5853d',   // NYC/Times Sq
+  'https://www.figma.com/api/mcp/asset/6693bc7e-ab2b-4fc1-8137-c4175cbf94de',   // City 2
+  'https://www.figma.com/api/mcp/asset/6ed79fb3-741c-4337-8ea0-0f59b26a6d62',   // City 3
+  'https://www.figma.com/api/mcp/asset/c83b454e-6c85-46fa-af4f-21b45deb0df2',   // City 4
 ];
 
-const DEST_GRADIENTS: string[] = [
-  'linear-gradient(160deg, #360033, #0b8793)',
-  'linear-gradient(160deg, #1c1c1c, #374151)',
-  'linear-gradient(160deg, #1a1a2e, #16213e, #533483)',
-  'linear-gradient(160deg, #0f2027, #203a43, #2c5364)',
+// Airline logos
+const AIRLINE_LOGOS = [
+  'https://www.figma.com/api/mcp/asset/26c03025-4494-40b5-83b0-84c602ed4f3d',   // Virgin Atlantic
+  'https://www.figma.com/api/mcp/asset/1538acae-9a4c-47db-8d2c-c7fe07992c13',   // Qatar Airways
+  'https://www.figma.com/api/mcp/asset/145b8370-0ce2-43fb-a2cd-a3b594372e98',   // ANA
+  'https://www.figma.com/api/mcp/asset/4da7a9a0-bed5-439e-9189-c6583396d1dd',   // Emirates
 ];
 
-const ROUTE_LABELS = [
-  'Air France · Economy',
-  'HDFC Bank Portal',
-  'Air France · Economy',
-  'Singapore Airlines · Business Class',
+// Bank / transfer partner logos
+const BANK_LOGOS = [
+  'https://www.figma.com/api/mcp/asset/28c39c38-f9cf-4672-bf32-12a3393f635f',
+  'https://www.figma.com/api/mcp/asset/29f859ce-9ab8-40f0-b0f8-428427d875fd',
+  'https://www.figma.com/api/mcp/asset/f4301f0a-7686-417e-814b-83b6d29733fd',
+  'https://www.figma.com/api/mcp/asset/de333933-e7c6-49ce-b76b-ad96bd9d3107',
 ];
 
-const PARTNER_LABELS = ['Flying Blue', '', 'Flying Blue', 'KrisFlyer'];
+// Arrow icon
+const ARROW_ICON = 'https://www.figma.com/api/mcp/asset/79e15657-bb19-4f79-93a4-85377bd4b810';
+
+// ── Slide data ────────────────────────────────────────────────
+const SLIDES = [
+  {
+    ptsLabel: '29000 pts',
+    sweetredeem: '29,000',
+    retailPrice: '₹3,60,800',
+    airline: 'VIRGIN ATLANTIC',
+    airlineSub: 'flying club',
+    origin: 'New Delhi',
+    dest: 'London',
+    cabin: 'Upper Class',
+  },
+  {
+    ptsLabel: '72500 pts',
+    sweetredeem: '72,500',
+    retailPrice: '₹14,64,800',
+    airline: 'QATAR AIRWAYS',
+    airlineSub: 'privilege club',
+    origin: 'Mumbai',
+    dest: 'New York',
+    cabin: 'QSuites',
+  },
+  {
+    ptsLabel: '75000 pts',
+    sweetredeem: '75,000',
+    retailPrice: '₹6,15,500',
+    airline: 'ANA',
+    airlineSub: 'mileage club',
+    origin: 'Delhi',
+    dest: 'Tokyo',
+    cabin: 'The Room',
+  },
+  {
+    ptsLabel: '102000 pts',
+    sweetredeem: '1,02,000',
+    retailPrice: '₹11,95,200',
+    airline: 'EMIRATES',
+    airlineSub: 'skywards',
+    origin: 'Bangalore',
+    dest: 'SFO',
+    cabin: 'First Class',
+  },
+];
 
 interface Props {
   spots: SweetSpotRow[];
 }
 
 export default function DealOfTheDay({ spots: _spots }: Props) {
-  const [active, setActive] = useState(2);
-
-  const opt = SELECTOR_OPTIONS[active];
-
-  const valueColor =
-    opt.tier === 'success' ? '#00C885'
-    : opt.tier === 'warn'  ? '#E08A00'
-    : '#E03E3E';
-
-  const badgeText =
-    opt.tier === 'success'
-      ? (active === 3 ? '⭐ Elite deal' : '✨ High Value')
-      : opt.tier === 'warn'
-        ? '⚡ Flash Deal'
-        : '⚠ Poor value — avoid';
-
-  const badgeStyle: React.CSSProperties = {
-    display: 'inline-flex', alignItems: 'center', gap: 4,
-    padding: '3px 10px', borderRadius: 9999,
-    fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
-    border: 'none', color: '#fff',
-    background:
-      opt.tier === 'success' ? 'rgba(0,200,133,0.9)'
-      : opt.tier === 'warn'  ? 'rgba(197,160,89,0.9)'
-      : 'rgba(224,62,62,0.9)',
-  };
-
-  const cppVal = +(opt.value / opt.pts).toFixed(2);
-  const vsBank = +(cppVal / 0.5).toFixed(1);
+  const [active, setActive] = useState(1); // default slide 2 (Qatar) as per Figma
+  const slide = SLIDES[active];
 
   return (
-    <>
-      {/* Section header */}
-      <div className="section-head" style={{ marginTop: 28 }}>
-        <span className="section-title">🎯 Deal of the Day</span>
-        <span style={{ fontSize: 13, color: '#00C885', fontWeight: 600 }}>HDFC Infinia</span>
-      </div>
+    <div style={{ marginTop: 28 }}>
 
-      {/* 2×2 selector grid */}
-      <div style={{ padding: '0 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {SELECTOR_OPTIONS.map((o, i) => {
-            const isActive = active === i;
-            const vColor =
-              o.tier === 'success' ? '#00C885'
-              : o.tier === 'warn'  ? '#E08A00'
-              : '#E03E3E';
-            return (
-              <button
-                key={i}
-                onClick={() => setActive(i)}
-                style={{
-                  background: isActive ? '#121212' : '#fff',
-                  border: `1.5px solid ${isActive ? '#121212' : '#EAEAEA'}`,
-                  borderRadius: 14,
-                  padding: '12px 14px',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.15s',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                }}
-              >
-                <p style={{ fontSize: 12, fontWeight: 700, color: isActive ? 'rgba(255,255,255,0.65)' : '#666', marginBottom: 4 }}>
-                  {o.label}
-                </p>
-                <p style={{
-                  fontFamily: '"Playfair Display", Georgia, serif',
-                  fontSize: 18, fontWeight: 700,
-                  color: isActive ? '#fff' : vColor,
-                }}>
-                  {formatINRFull(o.value)}
-                </p>
-                <p style={{ fontSize: 10, color: isActive ? 'rgba(255,255,255,0.45)' : '#999', marginTop: 3 }}>
-                  {o.sublabel} ›
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Dynamic deal card */}
-      <div style={{ margin: '14px 20px 0' }}>
+      {/* ── Card ────────────────────────────────────────────── */}
+      <div style={{ padding: '0 16px' }}>
         <div style={{
-          background: '#fff', borderRadius: 16,
-          overflow: 'hidden', border: '1px solid #EAEAEA',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.06)', cursor: 'pointer',
+          borderRadius: 28,
+          overflow: 'hidden',
+          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+          border: '0.75px solid #f1f5f9',
         }}>
-          {/* Image / gradient area */}
-          <div style={{ height: 175, background: DEST_GRADIENTS[active], position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent 55%)' }} />
-            {/* Badges */}
-            <div style={{ position: 'absolute', top: 14, left: 14, right: 14, display: 'flex', justifyContent: 'space-between' }}>
-              <span style={badgeStyle}>{badgeText}</span>
-              {PARTNER_LABELS[active] && (
-                <span style={{
-                  background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)',
-                  padding: '5px 12px', borderRadius: 9999,
-                  fontSize: 11, fontWeight: 700, color: '#fff',
-                }}>
-                  {PARTNER_LABELS[active]}
-                </span>
-              )}
+
+          {/* City photo */}
+          <div style={{ height: 210, overflow: 'hidden', position: 'relative' }}>
+            <img
+              src={CITY_IMGS[active]}
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+                // Gradient fallback background while image loads
+              }}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                (e.currentTarget.parentElement as HTMLElement).style.background =
+                  ['linear-gradient(160deg,#1c1c1c,#374151)',
+                   'linear-gradient(160deg,#1a1a2e,#16213e,#533483)',
+                   'linear-gradient(160deg,#0f2027,#203a43,#2c5364)',
+                   'linear-gradient(160deg,#360033,#0b8793)'][active];
+              }}
+            />
+          </div>
+
+          {/* ── Dark info panel ─────────────────────────────── */}
+          <div style={{ background: '#111', padding: '20px 20px 0' }}>
+
+            {/* Heading */}
+            <h2 style={{
+              fontSize: 26, fontWeight: 800, color: '#fff',
+              textTransform: 'uppercase',
+              letterSpacing: '-0.26px',
+              lineHeight: 1.25,
+              margin: '0 0 8px',
+            }}>
+              Exceptional Value,<br />Right Now
+            </h2>
+
+            <p style={{
+              fontSize: 11, color: '#90a1b9',
+              margin: '0 0 16px',
+            }}>
+              Hand-picked premium sweetspots updated daily!
+            </p>
+
+            {/* Points selector pills */}
+            <div style={{
+              display: 'flex', gap: 6,
+              overflowX: 'auto', paddingBottom: 4,
+              marginBottom: 16,
+              // hide scrollbar
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}>
+              {SLIDES.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActive(i)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 14,
+                    border: 'none',
+                    background: active === i ? '#2d2d2d' : 'transparent',
+                    color: active === i ? '#fff' : '#62748e',
+                    fontSize: 13, fontWeight: 700,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {s.ptsLabel}
+                </button>
+              ))}
             </div>
-            {/* Route */}
-            <div style={{ position: 'absolute', bottom: 14, left: 16, right: 16 }}>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>{ROUTE_LABELS[active]}</p>
-              <p style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-                {opt.sublabel.replace(' Economy', '').replace(' Business', '')}
-              </p>
+
+            {/* ── White comparison card ────────────────────── */}
+            <div style={{
+              background: '#fff',
+              borderRadius: 16,
+              padding: '16px',
+              marginBottom: 0,
+            }}>
+
+              {/* SweetRedeem pts ← VS → Retail Price */}
+              <div style={{
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 12,
+              }}>
+                {/* Left: SweetRedeem */}
+                <div>
+                  <p style={{
+                    fontSize: 9, fontWeight: 700, color: '#90a1b9',
+                    letterSpacing: '0.9px', textTransform: 'uppercase',
+                    margin: '0 0 4px',
+                  }}>Sweetredeem</p>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                    <span style={{
+                      fontSize: 26, fontWeight: 800, color: '#0f172b',
+                      letterSpacing: '-0.5px',
+                    }}>{slide.sweetredeem}</span>
+                    <span style={{ fontSize: 13, color: '#90a1b9' }}>pts</span>
+                  </div>
+                </div>
+
+                {/* VS badge */}
+                <div style={{
+                  width: 36, height: 36, borderRadius: 9999,
+                  background: '#0f172b',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: '#fff' }}>VS</span>
+                </div>
+
+                {/* Right: Retail Price (strikethrough) */}
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{
+                    fontSize: 9, fontWeight: 700, color: '#90a1b9',
+                    letterSpacing: '0.9px', textTransform: 'uppercase',
+                    margin: '0 0 4px',
+                  }}>Retail Price</p>
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <span style={{
+                      fontSize: 22, fontWeight: 800, color: '#0f172b',
+                      letterSpacing: '-0.5px', display: 'block',
+                    }}>{slide.retailPrice}</span>
+                    <div style={{
+                      position: 'absolute', left: 0, right: 0,
+                      top: '48%',
+                      height: 2, background: '#ff2e93',
+                    }} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ height: 1, background: '#f1f5f9', margin: '0 0 12px' }} />
+
+              {/* Transfer path: Bank → Airline */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                {/* Bank */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 8, overflow: 'hidden',
+                    background: '#f1f5f9', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <img
+                      src={BANK_LOGOS[active]}
+                      alt="Bank"
+                      style={{ width: 32, height: 32, objectFit: 'contain' }}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#314158', lineHeight: 1.2, margin: 0 }}>Membership</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#314158', lineHeight: 1.2, margin: 0 }}>Rewards</p>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div style={{ width: 16, height: 16, flexShrink: 0 }}>
+                  <img
+                    src={ARROW_ICON}
+                    alt="→"
+                    style={{ width: 16, height: 16 }}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).outerHTML =
+                        '<span style="font-size:14px;color:#90a1b9">→</span>';
+                    }}
+                  />
+                </div>
+
+                {/* Airline */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 8, overflow: 'hidden',
+                    background: '#f1f5f9', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <img
+                      src={AIRLINE_LOGOS[active]}
+                      alt={slide.airline}
+                      style={{ width: 32, height: 32, objectFit: 'contain' }}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p style={{
+                      fontSize: 12, fontWeight: 700, color: '#314158',
+                      textTransform: 'uppercase', lineHeight: 1.2, margin: 0,
+                    }}>{slide.airline}</p>
+                    <p style={{ fontSize: 11, color: '#90a1b9', lineHeight: 1.2, margin: 0 }}>{slide.airlineSub}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Route + cabin */}
+              <div style={{
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#314158' }}>{slide.origin}</span>
+                  <span style={{ fontSize: 12, color: '#94a3b8' }}>✈</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#314158' }}>{slide.dest}</span>
+                </div>
+                <span style={{ fontSize: 11, color: '#90a1b9' }}>{slide.cabin}</span>
+              </div>
             </div>
           </div>
 
-          {/* Data row */}
-          <div style={{ padding: '16px 16px 18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <div>
-                <p className="label-tag">Points required</p>
-                <p style={{ fontSize: 22, fontWeight: 800, marginTop: 2 }}>{formatPoints(opt.pts)}</p>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p className="label-tag">Cash value</p>
-                <p style={{ fontSize: 22, fontWeight: 800, color: valueColor, marginTop: 2 }}>{formatINRFull(opt.value)}</p>
-              </div>
+          {/* ── Navigation dots + counter ────────────────────── */}
+          <div style={{
+            background: '#111',
+            padding: '12px 20px 16px',
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            {/* Dots */}
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActive(i)}
+                  style={{
+                    width: i === active ? 28 : 8,
+                    height: 8,
+                    borderRadius: 100,
+                    background: i === active ? '#e55a2b' : '#cbd5e1',
+                    border: 'none', cursor: 'pointer', padding: 0,
+                    transition: 'width 0.2s ease',
+                  }}
+                />
+              ))}
             </div>
 
-            {active !== 1 ? (
-              <>
-                <div className="progress-track" style={{ marginTop: 12 }}>
-                  <div className="progress-fill" style={{ width: active === 3 ? '100%' : active === 2 ? '80%' : '60%' }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-                  <p style={{ fontSize: 12, color: '#666' }}>₹{cppVal.toFixed(2)} per point</p>
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center',
-                    padding: '3px 10px', borderRadius: 9999,
-                    fontSize: 10, fontWeight: 700,
-                    background: 'rgba(0,200,133,0.1)', color: '#00A86B',
-                    border: '1px solid rgba(0,200,133,0.2)',
-                  }}>
-                    {vsBank}× vs bank portal
-                  </span>
-                </div>
-              </>
-            ) : (
-              <p style={{ fontSize: 12, color: '#E03E3E', marginTop: 10, fontWeight: 600, lineHeight: 1.5 }}>
-                ₹0.50/pt — worst option. Use a transfer partner instead to get 2–4× more value ↑
-              </p>
-            )}
+            {/* Slide counter button */}
+            <button
+              onClick={() => setActive((active + 1) % SLIDES.length)}
+              style={{
+                width: 40, height: 40, borderRadius: 9999,
+                background: '#111',
+                border: '2px solid #333',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>
+                {active + 1}
+              </span>
+            </button>
           </div>
         </div>
       </div>
-    </>
+
+    </div>
   );
 }
