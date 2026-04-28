@@ -156,6 +156,24 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['newsletter_subscribers']['Insert']>;
       };
 
+      // ── scraper_runs ─────────────────────────────────────────
+      // Added in migration 006. Internal/admin only — no RLS.
+      scraper_runs: {
+        Row: {
+          id:             string;
+          scraper_name:   string;
+          status:         'success' | 'partial' | 'failed';
+          spots_found:    number;
+          spots_upserted: number;
+          error_message:  string | null;
+          duration_ms:    number | null;
+          started_at:     string;
+          completed_at:   string | null;
+        };
+        Insert: Omit<Database['public']['Tables']['scraper_runs']['Row'], 'id' | 'started_at'>;
+        Update: Partial<Database['public']['Tables']['scraper_runs']['Insert']>;
+      };
+
       // ── profiles ─────────────────────────────────────────────
       // Auto-created via trigger when a Supabase Auth user is created.
       profiles: {
@@ -195,16 +213,66 @@ export interface Database {
       };
     };
 
-    Views: Record<string, never>;
+    Views: {
+      // ── sweet_spot_returns ───────────────────────────────────
+      // One row per (sweet_spot × card) combination.
+      // Use for logged-in users — filter to their card IDs.
+      sweet_spot_returns: {
+        Row: {
+          sweet_spot_id:      string;
+          title:              string;
+          program_id:         string;
+          program_name:       string;
+          program_type:       'flight' | 'hotel' | 'hybrid';
+          route_or_property:  string;
+          category:           'economy' | 'business' | 'first' | 'hotel_standard' | 'hotel_suite';
+          points_required:    number;
+          est_cash_value_inr: number;
+          cpp:                number;
+          last_verified_at:   string | null;
+          card_id:            string;
+          card_name:          string;
+          card_slug:          string | null;
+          base_earn_rate:     number;
+          transfer_ratio:     number;
+          reward_return_pct:  number;
+        };
+      };
+      // ── sweet_spot_best_return ───────────────────────────────
+      // One row per sweet_spot — best card + % Return across all linked cards.
+      // Use for guest/public Discover feed.
+      sweet_spot_best_return: {
+        Row: {
+          sweet_spot_id:      string;
+          title:              string;
+          program_id:         string;
+          program_name:       string;
+          program_type:       'flight' | 'hotel' | 'hybrid';
+          route_or_property:  string;
+          category:           'economy' | 'business' | 'first' | 'hotel_standard' | 'hotel_suite';
+          points_required:    number;
+          est_cash_value_inr: number;
+          cpp:                number;
+          destination_url:    string | null;
+          last_verified_at:   string | null;
+          best_return_pct:    number;
+          best_card_name:     string;
+          best_card_slug:     string | null;
+        };
+      };
+    };
     Functions: Record<string, never>;
     Enums: Record<string, never>;
   };
 }
 
 // ── Convenience row type aliases ──────────────────────────────
-export type CardRow             = Database['public']['Tables']['cards']['Row'];
-export type LoyaltyProgramRow   = Database['public']['Tables']['loyalty_programs']['Row'];
-export type TransferLinkRow     = Database['public']['Tables']['transfer_links']['Row'];
-export type SweetSpotRow        = Database['public']['Tables']['sweet_spots']['Row'];
-export type ProfileRow          = Database['public']['Tables']['profiles']['Row'];
-export type UserCardHoldingRow  = Database['public']['Tables']['user_card_holdings']['Row'];
+export type CardRow                  = Database['public']['Tables']['cards']['Row'];
+export type LoyaltyProgramRow        = Database['public']['Tables']['loyalty_programs']['Row'];
+export type TransferLinkRow          = Database['public']['Tables']['transfer_links']['Row'];
+export type SweetSpotRow             = Database['public']['Tables']['sweet_spots']['Row'];
+export type ProfileRow               = Database['public']['Tables']['profiles']['Row'];
+export type UserCardHoldingRow       = Database['public']['Tables']['user_card_holdings']['Row'];
+export type SweetSpotReturnRow       = Database['public']['Views']['sweet_spot_returns']['Row'];
+export type SweetSpotBestReturnRow   = Database['public']['Views']['sweet_spot_best_return']['Row'];
+export type ScraperRunRow            = Database['public']['Tables']['scraper_runs']['Row'];

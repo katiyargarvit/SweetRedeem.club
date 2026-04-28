@@ -293,7 +293,7 @@ export default function CalculatorPage() {
           What are your points really worth?
         </h1>
         <p style={{ fontSize: 12, color: '#666' }}>
-          Pick your card, enter your balance — see the true value instantly.
+          Pick your card, enter your balance — see your true % return on spend.
         </p>
       </div>
 
@@ -388,6 +388,27 @@ export default function CalculatorPage() {
             <p style={{ fontSize: 12, color: '#7A5C00', marginTop: 6 }}>
               vs. just {formatINRFull(cashValue)} as statement credit
             </p>
+
+            {/* % Return on Spend */}
+            <div style={{
+              marginTop: 12, paddingTop: 12,
+              borderTop: '1px solid rgba(197,160,89,0.2)',
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <div>
+                <p style={{ fontSize: 9, color: '#7A5C00', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>
+                  % Return on spend
+                </p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <span style={{ fontSize: 26, fontWeight: 800, color: '#3A2800', lineHeight: 1 }}>
+                    {((selectedCard?.base_earn_rate ?? 3.33) * bestCpp).toFixed(1)}%
+                  </span>
+                  <span style={{ fontSize: 11, color: '#999' }}>
+                    vs {((selectedCard?.base_earn_rate ?? 3.33) * (selectedCard?.cash_redemption_cpp ?? 0.50)).toFixed(1)}% cash
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Bar chart comparison */}

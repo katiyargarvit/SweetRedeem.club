@@ -13,11 +13,14 @@
 // ============================================================
 
 import { useEffect } from 'react';
-import type { SweetSpotRow } from '@/lib/database.types';
+import type { SweetSpotRow, SweetSpotBestReturnRow } from '@/lib/database.types';
 import { formatINR, formatPoints, cppTier } from '@/lib/supabase-queries';
 
+// Accept both the raw sweet_spots row and the best_return view row
+type DrawerSpot = SweetSpotRow | SweetSpotBestReturnRow;
+
 interface Props {
-  spot: SweetSpotRow;
+  spot: DrawerSpot;
   onClose: () => void;
 }
 

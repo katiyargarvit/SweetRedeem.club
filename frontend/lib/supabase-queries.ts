@@ -18,7 +18,7 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import type { CardRow, LoyaltyProgramRow, SweetSpotRow, UserCardHoldingRow } from './database.types';
+import type { CardRow, LoyaltyProgramRow, SweetSpotRow, SweetSpotBestReturnRow, UserCardHoldingRow } from './database.types';
 
 // ── Cards ─────────────────────────────────────────────────────
 
@@ -118,6 +118,32 @@ export async function fetchSweetSpots(
     program_type: row.loyalty_programs?.type ?? null,
     loyalty_programs: undefined,
   })) as SweetSpotRow[];
+}
+
+/**
+ * Fetch sweet spots from the sweet_spot_best_return view.
+ * Returns best_return_pct + best_card_name for each spot — all DB-computed.
+ * Used on the public Discover feed (guest and logged-out users).
+ * Falls back to fetchSweetSpots() if the view is not yet deployed (42P01 error).
+ *
+ * Rule: never compute reward_return_pct in JS — always read from this view.
+ */
+export async function fetchSweetSpotsWithBestReturn(
+  filters: SweetSpotFilters = {},
+): Promise<SweetSpotBestReturnRow[]> {
+  const { category, limit = 30, offset = 0 } = filters;
+
+  let query = (supabase as any)
+    .from('sweet_spot_best_return')
+    .select('*')
+    .order('best_return_pct', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (category && category !== 'all') query = query.eq('category', category);
+
+  const { data, error } = await query;
+  if (error) throw new Error(`fetchSweetSpotsWithBestReturn: ${error.message}`);
+  return (data ?? []) as SweetSpotBestReturnRow[];
 }
 
 /** Fetch a single sweet spot by ID */

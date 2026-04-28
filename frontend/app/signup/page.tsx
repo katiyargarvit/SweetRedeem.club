@@ -58,7 +58,7 @@ export default function SignupPage() {
         email: trimmedEmail,
         options: {
           // Redirect back to home after clicking the magic link
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin}/`,
           shouldCreateUser: true,
         },
       });

@@ -7,25 +7,20 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
-import { fetchSweetSpots, formatINR, formatPoints, cppTier } from '@/lib/supabase-queries';
+import { fetchSweetSpotsWithBestReturn, formatINR, formatPoints } from '@/lib/supabase-queries';
 import { supabase } from '@/lib/supabase';
-import type { SweetSpotRow } from '@/lib/database.types';
+import type { SweetSpotBestReturnRow } from '@/lib/database.types';
 import DealDrawer from '@/components/ui/DealDrawer';
 
 // ── Mock data (shown when Supabase is not yet configured) ────
-const _MOCK_DEFAULTS = {
-  destination_url: null, status: 'live' as const,
-  source_value_native: null, source_currency: null,
-  is_active: true, created_at: '', updated_at: '',
-  last_verified_at: new Date().toISOString(), needs_review: false,
-};
-const MOCK_SPOTS: SweetSpotRow[] = [
-  { ..._MOCK_DEFAULTS, id: '1', program_id: 'p1', program_name: 'KrisFlyer',      program_type: 'flight', title: 'BOM → SIN Business',          route_or_property: 'BOM → SIN',          category: 'business',     points_required: 55000, est_cash_value_inr: 140000, cpp: 2.55 },
-  { ..._MOCK_DEFAULTS, id: '2', program_id: 'p2', program_name: 'Flying Blue',     program_type: 'flight', title: 'DEL → CDG Economy Flash',      route_or_property: 'DEL → CDG',          category: 'economy',      points_required: 12000, est_cash_value_inr: 35000,  cpp: 2.92 },
-  { ..._MOCK_DEFAULTS, id: '3', program_id: 'p3', program_name: 'Aeroplan',        program_type: 'flight', title: 'BOM → YYZ Business',           route_or_property: 'BOM → YYZ',          category: 'business',     points_required: 70000, est_cash_value_inr: 175000, cpp: 2.50 },
-  { ..._MOCK_DEFAULTS, id: '4', program_id: 'p4', program_name: 'KrisFlyer',       program_type: 'flight', title: 'SIN → LHR First Class',        route_or_property: 'SIN → LHR',          category: 'first',        points_required: 95000, est_cash_value_inr: 350000, cpp: 3.68 },
-  { ..._MOCK_DEFAULTS, id: '5', program_id: 'p5', program_name: 'World of Hyatt',  program_type: 'hotel',  title: 'Park Hyatt Maldives — Peak',   route_or_property: 'Park Hyatt Maldives', category: 'hotel_suite',  points_required: 35000, est_cash_value_inr: 95000,  cpp: 2.71 },
-  { ..._MOCK_DEFAULTS, id: '6', program_id: 'p6', program_name: 'Qatar Privilege', program_type: 'flight', title: 'DEL → DOH Business',           route_or_property: 'DEL → DOH',          category: 'business',     points_required: 22000, est_cash_value_inr: 55000,  cpp: 2.50 },
+const _MOCK_DEFAULTS = { last_verified_at: new Date().toISOString() };
+const MOCK_SPOTS: SweetSpotBestReturnRow[] = [
+  { ..._MOCK_DEFAULTS, sweet_spot_id: '1', program_id: 'p1', program_name: 'KrisFlyer',      program_type: 'flight', title: 'BOM → SIN Business',         route_or_property: 'BOM → SIN',          category: 'business',    points_required: 55000, est_cash_value_inr: 140000, cpp: 2.55, best_return_pct: 8.49, best_card_name: 'HDFC Infinia',          best_card_slug: 'hdfc-infinia' },
+  { ..._MOCK_DEFAULTS, sweet_spot_id: '2', program_id: 'p2', program_name: 'Flying Blue',    program_type: 'flight', title: 'DEL → CDG Economy Flash',     route_or_property: 'DEL → CDG',          category: 'economy',     points_required: 12000, est_cash_value_inr: 35000,  cpp: 2.92, best_return_pct: 9.72, best_card_name: 'HDFC Infinia',          best_card_slug: 'hdfc-infinia' },
+  { ..._MOCK_DEFAULTS, sweet_spot_id: '3', program_id: 'p3', program_name: 'Aeroplan',       program_type: 'flight', title: 'BOM → YYZ Business',          route_or_property: 'BOM → YYZ',          category: 'business',    points_required: 70000, est_cash_value_inr: 175000, cpp: 2.50, best_return_pct: 8.33, best_card_name: 'HDFC Infinia',          best_card_slug: 'hdfc-infinia' },
+  { ..._MOCK_DEFAULTS, sweet_spot_id: '4', program_id: 'p4', program_name: 'KrisFlyer',      program_type: 'flight', title: 'SIN → LHR First Class',       route_or_property: 'SIN → LHR',          category: 'first',       points_required: 95000, est_cash_value_inr: 350000, cpp: 3.68, best_return_pct: 12.26, best_card_name: 'HDFC Infinia',         best_card_slug: 'hdfc-infinia' },
+  { ..._MOCK_DEFAULTS, sweet_spot_id: '5', program_id: 'p5', program_name: 'Marriott Bonvoy', program_type: 'hotel', title: 'Park Hyatt Maldives — Peak',  route_or_property: 'Park Hyatt Maldives', category: 'hotel_suite', points_required: 35000, est_cash_value_inr: 95000,  cpp: 2.71, best_return_pct: 9.03, best_card_name: 'Axis Magnus (Burgundy)', best_card_slug: 'axis-magnus-burgundy' },
+  { ..._MOCK_DEFAULTS, sweet_spot_id: '6', program_id: 'p6', program_name: 'Avios',           program_type: 'flight', title: 'DEL → LHR Business via BA',  route_or_property: 'DEL → LHR',          category: 'business',    points_required: 40000, est_cash_value_inr: 234000, cpp: 5.85, best_return_pct: 19.49, best_card_name: 'HDFC Infinia',         best_card_slug: 'hdfc-infinia' },
 ];
 
 // ── Filter config ────────────────────────────────────────────
@@ -51,7 +46,7 @@ const DEST_GRADIENTS: Record<string, string> = {
   HOTEL: 'linear-gradient(135deg, #1a1200 0%, #3a2a00 40%, #1a1200 100%)',
 };
 
-function getGradient(spot: SweetSpotRow): string {
+function getGradient(spot: SweetSpotBestReturnRow): string {
   if (spot.program_type === 'hotel') return DEST_GRADIENTS.HOTEL;
   const dest = (spot.route_or_property ?? '').split('→').pop()?.trim().substring(0, 3).toUpperCase() ?? '';
   return DEST_GRADIENTS[dest] ?? 'linear-gradient(135deg, #111827 0%, #1f2937 100%)';
@@ -64,18 +59,17 @@ function cabinEmoji(cat: string): string {
   return '🏨';
 }
 
-// ── CPP badge colours ─────────────────────────────────────────
-const CPP_COLOURS: Record<string, { bg: string; text: string; border: string }> = {
-  'Elite Value': { bg: 'rgba(0,200,133,0.12)', text: '#00A86B', border: 'rgba(0,200,133,0.25)' },
-  'High Value':  { bg: 'rgba(0,200,133,0.07)', text: '#00A86B', border: 'rgba(0,200,133,0.15)' },
-  'Good Value':  { bg: 'rgba(224,138,0,0.10)',  text: '#E08A00', border: 'rgba(224,138,0,0.22)' },
-  'Poor Value':  { bg: 'rgba(224,62,62,0.10)',  text: '#C0392B', border: 'rgba(224,62,62,0.20)' },
-};
+// ── Return % tier colours ─────────────────────────────────────
+function returnTierColour(pct: number): { bg: string; text: string; border: string } {
+  if (pct >= 15) return { bg: 'rgba(0,200,133,0.12)', text: '#00A86B', border: 'rgba(0,200,133,0.25)' };
+  if (pct >= 8)  return { bg: 'rgba(0,200,133,0.07)', text: '#00A86B', border: 'rgba(0,200,133,0.15)' };
+  if (pct >= 5)  return { bg: 'rgba(224,138,0,0.10)',  text: '#E08A00', border: 'rgba(224,138,0,0.22)' };
+  return               { bg: 'rgba(224,62,62,0.10)',  text: '#C0392B', border: 'rgba(224,62,62,0.20)' };
+}
 
 // ── Roame-style deal card ─────────────────────────────────────
-function DealCard({ spot, locked, onClick }: { spot: SweetSpotRow; locked?: boolean; onClick?: () => void }) {
-  const { label: tierLabel, badgeClass } = cppTier(spot.cpp);
-  const cppColour = CPP_COLOURS[tierLabel] ?? CPP_COLOURS['Good Value'];
+function DealCard({ spot, locked, onClick }: { spot: SweetSpotBestReturnRow; locked?: boolean; onClick?: () => void }) {
+  const retColour = returnTierColour(spot.best_return_pct);
   const gradient = getGradient(spot);
   const dest = spot.program_type === 'hotel'
     ? (spot.route_or_property ?? '').substring(0, 20)
@@ -117,17 +111,22 @@ function DealCard({ spot, locked, onClick }: { spot: SweetSpotRow; locked?: bool
           {spot.program_name}
         </span>
 
-        {/* CPP badge top-right */}
-        <span style={{
+        {/* % Return badge top-right */}
+        <div style={{
           position: 'absolute', top: 10, right: 10,
           padding: '3px 9px',
-          background: cppColour.bg,
-          border: `1px solid ${cppColour.border}`,
+          background: retColour.bg,
+          border: `1px solid ${retColour.border}`,
           borderRadius: 9999,
-          fontSize: 10, fontWeight: 700, color: cppColour.text,
+          textAlign: 'center',
         }}>
-          {tierLabel}
-        </span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: retColour.text, display: 'block', lineHeight: 1.1 }}>
+            {spot.best_return_pct.toFixed(1)}%
+          </span>
+          <span style={{ fontSize: 8, fontWeight: 600, color: retColour.text, opacity: 0.75, letterSpacing: '0.04em' }}>
+            RETURN
+          </span>
+        </div>
 
         {/* Cabin badge top-left */}
         <span style={{
@@ -162,12 +161,15 @@ function DealCard({ spot, locked, onClick }: { spot: SweetSpotRow; locked?: bool
           </p>
         )}
 
-        {/* Transfer route label */}
-        <p style={{ fontSize: 11, color: '#666', marginBottom: 12, lineHeight: 1.4 }}>
+        {/* Transfer route label + Best with card */}
+        <p style={{ fontSize: 11, color: '#666', marginBottom: 4, lineHeight: 1.4 }}>
           {spot.title}
         </p>
+        <p style={{ fontSize: 10, color: '#C5A059', fontWeight: 700, marginBottom: 12 }}>
+          Best with {spot.best_card_name}
+        </p>
 
-        {/* Points + value row */}
+        {/* Points + value + % Return row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: 9, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Points</p>
@@ -184,10 +186,11 @@ function DealCard({ spot, locked, onClick }: { spot: SweetSpotRow; locked?: bool
           </div>
           <div style={{ width: 1, height: 32, background: '#EAEAEA' }} />
           <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: 9, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>CPP</p>
-            <p style={{ fontSize: 16, fontWeight: 800, color: cppColour.text }}>
-              ₹{spot.cpp.toFixed(2)}
+            <p style={{ fontSize: 9, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Return</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: retColour.text }}>
+              {spot.best_return_pct.toFixed(1)}%
             </p>
+            <p style={{ fontSize: 9, color: '#bbb', marginTop: 1 }}>₹{spot.cpp.toFixed(2)}/pt</p>
           </div>
         </div>
       </div>
@@ -260,14 +263,14 @@ function FilterPill({ label, active, onClick }: { label: string; active: boolean
 
 // ── Page ──────────────────────────────────────────────────────
 export default function DiscoverPage() {
-  const [spots, setSpots]               = useState<SweetSpotRow[]>([]);
+  const [spots, setSpots]               = useState<SweetSpotBestReturnRow[]>([]);
   const [loading, setLoading]           = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [typeFilter, setTypeFilter]     = useState<FilterType>('All');
   const [cabinFilter, setCabinFilter]   = useState<FilterCabin>('All Cabins');
   const [priceFilter, setPriceFilter]   = useState<FilterPrice>('All Prices');
   const [destFilter, setDestFilter]     = useState('All');
-  const [selectedSpot, setSelectedSpot] = useState<SweetSpotRow | null>(null);
+  const [selectedSpot, setSelectedSpot] = useState<SweetSpotBestReturnRow | null>(null);
 
   useEffect(() => {
     // Check auth session
@@ -282,7 +285,7 @@ export default function DiscoverPage() {
   }, []);
 
   useEffect(() => {
-    fetchSweetSpots({ limit: 30 })
+    fetchSweetSpotsWithBestReturn({ limit: 30 })
       .then((data) => setSpots(data.length > 0 ? data : MOCK_SPOTS))
       .catch(() => setSpots(MOCK_SPOTS))
       .finally(() => setLoading(false));
@@ -329,7 +332,7 @@ export default function DiscoverPage() {
           Curated sweet spots
         </h1>
         <p style={{ fontSize: 12, color: '#666' }}>
-          Best-value awards right now — ranked by ₹/point
+          Best-value awards right now — ranked by % return on spend
         </p>
       </div>
 
@@ -408,12 +411,12 @@ export default function DiscoverPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {visibleFree.map((spot) => (
-            <DealCard key={spot.id} spot={spot} onClick={() => setSelectedSpot(spot)} />
+            <DealCard key={spot.sweet_spot_id} spot={spot} onClick={() => setSelectedSpot(spot)} />
           ))}
 
           {/* Locked teaser cards — guests only */}
           {visibleLocked.map((spot) => (
-            <DealCard key={spot.id} spot={spot} locked />
+            <DealCard key={spot.sweet_spot_id} spot={spot} locked />
           ))}
         </div>
       )}

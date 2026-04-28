@@ -31,7 +31,7 @@ export default function LoginPage() {
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin}/`,
           // shouldCreateUser: false → only sign in existing users.
           // Set to true so a mistyped URL doesn't silently fail for new users.
           shouldCreateUser: false,
