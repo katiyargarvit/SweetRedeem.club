@@ -13,7 +13,7 @@ import type { SweetSpotBestReturnRow } from '@/lib/database.types';
 import DealDrawer from '@/components/ui/DealDrawer';
 
 // ── Mock data (shown when Supabase is not yet configured) ────
-const _MOCK_DEFAULTS = { last_verified_at: new Date().toISOString() };
+const _MOCK_DEFAULTS = { last_verified_at: new Date().toISOString(), destination_url: null };
 const MOCK_SPOTS: SweetSpotBestReturnRow[] = [
   { ..._MOCK_DEFAULTS, sweet_spot_id: '1', program_id: 'p1', program_name: 'KrisFlyer',      program_type: 'flight', title: 'BOM → SIN Business',         route_or_property: 'BOM → SIN',          category: 'business',    points_required: 55000, est_cash_value_inr: 140000, cpp: 2.55, best_return_pct: 8.49, best_card_name: 'HDFC Infinia',          best_card_slug: 'hdfc-infinia' },
   { ..._MOCK_DEFAULTS, sweet_spot_id: '2', program_id: 'p2', program_name: 'Flying Blue',    program_type: 'flight', title: 'DEL → CDG Economy Flash',     route_or_property: 'DEL → CDG',          category: 'economy',     points_required: 12000, est_cash_value_inr: 35000,  cpp: 2.92, best_return_pct: 9.72, best_card_name: 'HDFC Infinia',          best_card_slug: 'hdfc-infinia' },
