@@ -1,7 +1,7 @@
 {
   "name": "sweetredeem-scraper",
   "version": "1.0.0",
-  "description": "SweetRedeem.club — award chart & promo scraper",
+  "description": "SweetRedeem.club -- award chart & promo scraper",
   "private": true,
   "scripts": {
     "scrape": "ts-node --project tsconfig.json index.ts",
@@ -11,7 +11,21 @@
     "scrape:lfal": "ts-node --project tsconfig.json scrapers/lfal.ts",
     "scrape:airindia": "ts-node --project tsconfig.json scrapers/airindia.ts",
     "scrape:marriott": "ts-node --project tsconfig.json scrapers/marriott.ts",
-    "scrape:accor": "ts-node --project tsconfig.json scrapers/accor.ts"
+    "scrape:accor": "ts-node --project tsconfig.json scrapers/accor.ts",
+    "scrape:skywards": "ts-node --project tsconfig.json scrapers/skywards.ts",
+    "scrape:avios": "ts-node --project tsconfig.json scrapers/avios.ts",
+    "scrape:etihad": "ts-node --project tsconfig.json scrapers/etihad.ts",
+    "scrape:aeroplan": "ts-node --project tsconfig.json scrapers/aeroplan.ts",
+    "scrape:turkish": "ts-node --project tsconfig.json scrapers/turkish.ts",
+    "scrape:ihg": "ts-node --project tsconfig.json scrapers/ihg.ts",
+    "scrape:hilton": "ts-node --project tsconfig.json scrapers/hilton.ts",
+    "scrape:itchotels": "ts-node --project tsconfig.json scrapers/itchotels.ts",
+    "scrape:savesage": "ts-node --project tsconfig.json scrapers/savesage.ts",
+    "upload:savesage": "ts-node --project tsconfig.json scrapers/savesage-upload.ts",
+    "scrape:liveprices": "ts-node --project tsconfig.json scrapers/air-india-live.ts",
+    "scrape:airlive": "ts-node --project tsconfig.json scrapers/air-india-live.ts",
+    "scrape:marriottlive": "ts-node --project tsconfig.json scrapers/marriott-live.ts",
+    "spy:airindia": "ts-node --project tsconfig.json scrapers/air-india-spy.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.43.4",

@@ -1,11 +1,9 @@
-// ============================================================
 // Shared utilities for all scrapers
-// ============================================================
 
 import { supabase } from './supabase';
 
-// ── Program UUIDs (from supabase/seed.sql + migration 002) ────
-// Use these constants so scrapers don't have hardcoded UUID strings.
+// Program UUIDs (from supabase/seed.sql + migrations)
+// Use these constants so scrapers never hardcode UUID strings.
 
 export const PROGRAM_IDS = {
   AIR_INDIA:    '00000000-0000-0000-0002-000000000001',
@@ -20,10 +18,14 @@ export const PROGRAM_IDS = {
   SKYWARDS:     '00000000-0000-0000-0002-000000000010',
   ASIA_MILES:   '00000000-0000-0000-0002-000000000011',
   QATAR:        '00000000-0000-0000-0002-000000000012',
+  HILTON:       '00000000-0000-0000-0002-000000000013',
+  ITC_HOTELS:   '00000000-0000-0000-0002-000000000014',
   ETIHAD:       '00000000-0000-0000-0002-000000000015',
+  TURKISH:      '00000000-0000-0000-0002-000000000016',
+  IHG:          '00000000-0000-0000-0002-000000000017',
 } as const;
 
-// ── Insert type (matches actual sweet_spots schema) ──────────
+// Insert type (matches actual sweet_spots schema)
 
 export type SweetSpotCategory =
   | 'economy'
@@ -33,29 +35,49 @@ export type SweetSpotCategory =
   | 'hotel_suite';
 
 export interface SweetSpotInsert {
-  program_id:          string;               // UUID — use PROGRAM_IDS constants
-  title:               string;               // e.g. "Paris → Bordeaux Economy Promo"
-  route_or_property:   string;               // e.g. "CDG–BOD" or "Park Hyatt Mumbai"
-  points_required:     number;               // > 0  (miles/points to redeem)
-  est_cash_value_inr:  number;               // ₹ equivalent cash value
-  source_value_native?: number;              // nullable — raw value in source currency
-  source_currency?:    string;               // nullable — e.g. "USD", "EUR"
-  category:            SweetSpotCategory;
-  destination_url?:    string;               // booking URL or program page
-  status:              'pending';            // always 'pending' from scraper
-  needs_review?:       boolean;             // true = scraped dynamic data, must verify manually
-  last_verified_at?:   string;               // ISO timestamp, defaults to NOW()
+  program_id:           string;
+  title:                string;
+  route_or_property:    string;
+  points_required:      number;
+  est_cash_value_inr:   number;
+  source_value_native?: number;
+  source_currency?:     string;
+  category:             SweetSpotCategory;
+  destination_url?:     string;
+  status:               'pending';
+  needs_review?:        boolean;
+  last_verified_at?:    string;
+
+  // Structured flight metadata (migration 013)
+  // Leave all fields undefined for hotel spots.
+  //
+  // origin_iata / destination_iata: specific IATA codes for
+  //   point-to-point routes (e.g. 'DEL', 'LHR').
+  //   Omit for zone-based programs (KrisFlyer "India to Europe").
+  //
+  // origin_region / destination_region: human region label.
+  //   Values: 'India' | 'Southeast Asia' | 'Europe' |
+  //           'Middle East' | 'North America' | 'Australia / Pacific'
+  //
+  // operating_airline: display name of the carrier.
+  //   e.g. 'Air India', 'Singapore Airlines', 'Etihad Airways'
+  //
+  // stops: 0 = nonstop, 1 = 1-stop via hub, etc.
+  //
+  // is_india_route is a GENERATED column in the DB -- never insert it.
+  origin_iata?:         string;
+  destination_iata?:    string;
+  origin_region?:       string;
+  destination_region?:  string;
+  operating_airline?:   string;
+  stops?:               number;
 }
+// NOTE: cpp and is_india_route columns are GENERATED ALWAYS in DB -- never insert them
 
-// ── Upsert helper ──────────────────────────────────────────
+// Upsert helper
+// Clears existing 'pending' rows for the program, then batch-inserts new ones.
+// Preserves status='live' rows. Safe to call on every scraper run.
 
-/**
- * Insert sweet spots into Supabase.
- * Clears existing 'pending' rows for the program first to avoid
- * duplicates on re-runs (approved/live rows are preserved).
- *
- * All inserts land at status='pending' — Garvit approves in Table Editor.
- */
 export async function upsertSweetSpots(
   spots: SweetSpotInsert[],
   programId: string
@@ -65,7 +87,6 @@ export async function upsertSweetSpots(
     return;
   }
 
-  // Delete existing pending rows for this program (won't touch approved/live)
   const { error: delError } = await supabase
     .from('sweet_spots')
     .delete()
@@ -73,7 +94,6 @@ export async function upsertSweetSpots(
     .eq('status', 'pending');
 
   if (delError) {
-    // Non-fatal — log and continue (inserts may create duplicates but that's ok)
     console.warn(`  Warning: could not clear pending rows: ${delError.message}`);
   }
 
@@ -85,10 +105,54 @@ export async function upsertSweetSpots(
     throw new Error(`Supabase insert failed: ${error.message}`);
   }
 
-  console.log(`  ✅ Inserted ${spots.length} sweet spots (status=pending)`);
+  console.log(`  Inserted ${spots.length} sweet spots (status=pending)`);
 }
 
-// ── Logging ──────────────────────────────────────────────────
+// Live price helpers (Phase 5)
+// Used by air-india-live.ts and marriott-live.ts to write real-time
+// cash prices into the live_prices table.
+
+export interface LivePriceInsert {
+  sweet_spot_id:  string;
+  cash_price_inr: number;
+  search_date:    string;
+  source:         string;
+}
+
+export async function upsertLivePrices(
+  prices:  LivePriceInsert[],
+  spotIds: string[],
+  source:  string,
+): Promise<void> {
+  if (prices.length === 0) {
+    console.log('  No live prices to insert.');
+    return;
+  }
+
+  if (spotIds.length > 0) {
+    const { error: delError } = await supabase
+      .from('live_prices')
+      .delete()
+      .in('sweet_spot_id', spotIds)
+      .eq('source', source);
+
+    if (delError) {
+      console.warn(`  Warning: could not clear stale live_prices: ${delError.message}`);
+    }
+  }
+
+  const { error } = await supabase
+    .from('live_prices')
+    .insert(prices);
+
+  if (error) {
+    throw new Error(`live_prices insert failed: ${error.message}`);
+  }
+
+  console.log(`  Inserted ${prices.length} live price rows (source=${source})`);
+}
+
+// Logging
 
 export function log(scraper: string, msg: string): void {
   console.log(`[${scraper}] ${msg}`);

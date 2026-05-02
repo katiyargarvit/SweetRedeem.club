@@ -54,6 +54,26 @@ interface PromoCard {
   cabin:       string; // raw label from DOM e.g. "Economy", "Business", "Premium"
 }
 
+// Known Indian city names as they appear in Flying Blue DOM.
+// Used to set origin_region for the is_india_route GENERATED column.
+const INDIA_CITIES = new Set([
+  'Mumbai', 'Delhi', 'New Delhi', 'Bengaluru', 'Bangalore',
+  'Chennai', 'Kolkata', 'Hyderabad', 'Kochi', 'Ahmedabad',
+  'Goa', 'Jaipur', 'Lucknow', 'Amritsar', 'Thiruvananthapuram',
+]);
+
+// Maps Flying Blue city display names → IATA codes.
+// Covers Indian cities and major hubs that appear in promo cards.
+const CITY_TO_IATA: Record<string, string> = {
+  'Mumbai': 'BOM', 'Delhi': 'DEL', 'New Delhi': 'DEL',
+  'Bengaluru': 'BLR', 'Bangalore': 'BLR', 'Chennai': 'MAA',
+  'Kolkata': 'CCU', 'Hyderabad': 'HYD', 'Kochi': 'COK',
+  'Ahmedabad': 'AMD', 'Goa': 'GOI',
+  'Paris': 'CDG', 'Amsterdam': 'AMS', 'Lyon': 'LYS',
+  'Marseille': 'MRS', 'Nice': 'NCE', 'Bordeaux': 'BOD',
+  'New York': 'JFK', 'Los Angeles': 'LAX', 'Miami': 'MIA',
+};
+
 // ── DOM extraction (verified live March 2026) ─────────────────
 // Cards use `.group.w-full.h-full.rounded` — 44 cards on the page.
 // innerText gives clean multi-line text; we parse origin, destination,
@@ -170,12 +190,17 @@ async function scrapeFlyingBlue(): Promise<void> {
       return;
     }
 
-    // Dismiss cookie banner if it appears
+    // Dismiss cookie banner if it appears.
+    // After clicking, Flying Blue's Angular app does a client-side navigation
+    // to persist the preference — wait for it to settle before we proceed.
     const cookieBtn = page.locator('button:has-text("Reject"), button:has-text("Disagree")');
     try {
       await cookieBtn.first().waitFor({ timeout: 6_000 });
       await cookieBtn.first().click();
       log('FlyingBlue', 'Cookie banner dismissed');
+      // Give Angular time to finish its post-banner navigation before we query the DOM.
+      await page.waitForLoadState('domcontentloaded', { timeout: 10_000 }).catch(() => {});
+      await page.waitForTimeout(1_000);
     } catch { /* banner may not appear every run */ }
 
     // Wait for Angular to render the first promo card
@@ -183,6 +208,9 @@ async function scrapeFlyingBlue(): Promise<void> {
     const cardSelector = '.group.w-full.h-full.rounded';
     try {
       await page.waitForSelector(cardSelector, { timeout: 30_000 });
+      // Extra settle time — Angular may still be hydrating after the selector appears
+      await page.waitForLoadState('domcontentloaded', { timeout: 8_000 }).catch(() => {});
+      await page.waitForTimeout(500);
     } catch {
       const title = await page.title().catch(() => 'unknown');
       log('FlyingBlue', `Cards not found (page: "${title}") — skipping.`);
@@ -190,7 +218,23 @@ async function scrapeFlyingBlue(): Promise<void> {
     }
 
     log('FlyingBlue', 'Cards detected — extracting...');
-    const rawCards = await extractFromDom(page);
+
+    // page.evaluate can throw "Execution context was destroyed" if a navigation
+    // fires mid-call (e.g. Angular lazy-route update).  Retry once after settling.
+    let rawCards: PromoCard[] = [];
+    try {
+      rawCards = await extractFromDom(page);
+    } catch (evalErr) {
+      const msg = (evalErr as Error).message ?? '';
+      if (msg.includes('context was destroyed') || msg.includes('navigat')) {
+        log('FlyingBlue', `evaluate failed (${msg}) — waiting 3 s and retrying once...`);
+        await page.waitForLoadState('domcontentloaded', { timeout: 15_000 }).catch(() => {});
+        await page.waitForTimeout(3_000);
+        rawCards = await extractFromDom(page); // let this throw if it fails again
+      } else {
+        throw evalErr;
+      }
+    }
     log('FlyingBlue', `Extracted ${rawCards.length} cards from DOM`);
 
     const now       = new Date();
@@ -209,6 +253,11 @@ async function scrapeFlyingBlue(): Promise<void> {
         const cabinKey    = CABIN_MAP[c.cabin.toLowerCase()] ?? 'economy';
         const cashValue   = CASH_VALUE_INR[cabinKey] ?? 20000;
 
+        const originIata      = CITY_TO_IATA[origin];
+        const destIata        = CITY_TO_IATA[destination];
+        const isIndiaOrigin   = INDIA_CITIES.has(origin);
+        const isIndiaDest     = INDIA_CITIES.has(destination);
+
         return {
           program_id:         PROGRAM_IDS.FLYING_BLUE,
           title:              `${origin} → ${destination} ${c.cabin} Promo — ${monthYear}`,
@@ -220,6 +269,13 @@ async function scrapeFlyingBlue(): Promise<void> {
           status:             'pending',
           needs_review:       true,
           last_verified_at:   today,
+          // Structured flight metadata (migration 013)
+          origin_iata:        originIata,
+          destination_iata:   destIata,
+          origin_region:      isIndiaOrigin ? 'India' : undefined,
+          destination_region: isIndiaDest   ? 'India' : undefined,
+          operating_airline:  'Air France / KLM',
+          stops:              0,  // Flying Blue promo fares are always direct
         };
       });
 

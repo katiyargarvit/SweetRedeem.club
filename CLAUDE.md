@@ -18,11 +18,22 @@ Route tasks to the correct agent:
 - **Data agent** → schema changes, migrations, seed data, transfer link math
 - **Ops agent** → deployment, environment, cron jobs, monitoring, notifications
 
+## Coding Rules (Non-Negotiable)
+- `cpp` is a **GENERATED column** in Supabase — never compute it in frontend or scrapers; just read `spot.cpp`
+- Only surface sweet spots where CPP ≥ ₹1.20 (below that, cash redemption beats it)
+- All Supabase queries go in `lib/supabase-queries.ts` — no inline calls in components
+- Use ISR (`export const revalidate = 300`) for all SEO-facing pages
+- Import `PROGRAM_IDS` from `scraper/lib/utils.ts` — never hardcode UUIDs in scraper files
+- Never compute CPP, transfer ratios, or cash values in JS — these come from DB
+- `reward_return_pct` is always read from `sweet_spot_returns` (personalised) or `sweet_spot_best_return` (guest) views — never derived client-side
+- Primary user-facing metric is **% Return on Spend** (not raw CPP). CPP is internal/secondary only.
+
 ## What NOT to do
-- Don't build Phase 2 features unless explicitly asked (scope creep)
-- Don't modify schema.sql directly — always create numbered migrations
+- Don't build backlog features unless explicitly asked (scope creep)
+- Don't modify schema.sql directly — always create numbered migrations (004, 005, …)
 - Don't scrape behind login walls (legal risk) — public pages only
 - Don't store API keys in code — use .env files only
+- Don't insert `cpp` in SweetSpotInsert — it's generated
 
 ## Workflow Orchestration
 1. Plan Mode Default

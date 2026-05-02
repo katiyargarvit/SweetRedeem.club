@@ -97,7 +97,7 @@ export async function fetchSweetSpots(
     .from('sweet_spots')
     .select(`
       *,
-      loyalty_programs ( name, type )
+      loyalty_programs ( name, type, logo_url )
     `)
     .eq('status', 'live')
     .eq('is_active', true)
@@ -114,8 +114,9 @@ export async function fetchSweetSpots(
   // Flatten joined loyalty_programs fields onto each row
   return (data ?? []).map((row: any) => ({
     ...row,
-    program_name: row.loyalty_programs?.name ?? null,
-    program_type: row.loyalty_programs?.type ?? null,
+    program_name:     row.loyalty_programs?.name     ?? null,
+    program_type:     row.loyalty_programs?.type     ?? null,
+    program_logo_url: row.loyalty_programs?.logo_url ?? null,
     loyalty_programs: undefined,
   })) as SweetSpotRow[];
 }
@@ -150,7 +151,7 @@ export async function fetchSweetSpotsWithBestReturn(
 export async function fetchSweetSpotById(id: string): Promise<SweetSpotRow | null> {
   const { data, error } = await supabase
     .from('sweet_spots')
-    .select(`*, loyalty_programs ( name, type )`)
+    .select(`*, loyalty_programs ( name, type, logo_url )`)
     .eq('id', id)
     .eq('status', 'live')
     .eq('is_active', true)
@@ -161,8 +162,9 @@ export async function fetchSweetSpotById(id: string): Promise<SweetSpotRow | nul
 
   return {
     ...(data as any),
-    program_name: (data as any).loyalty_programs?.name ?? null,
-    program_type: (data as any).loyalty_programs?.type ?? null,
+    program_name:     (data as any).loyalty_programs?.name     ?? null,
+    program_type:     (data as any).loyalty_programs?.type     ?? null,
+    program_logo_url: (data as any).loyalty_programs?.logo_url ?? null,
     loyalty_programs: undefined,
   } as SweetSpotRow;
 }
@@ -171,7 +173,7 @@ export async function fetchSweetSpotById(id: string): Promise<SweetSpotRow | nul
 export async function fetchDealOfTheDay(): Promise<SweetSpotRow | null> {
   const { data, error } = await supabase
     .from('sweet_spots')
-    .select(`*, loyalty_programs ( name, type )`)
+    .select(`*, loyalty_programs ( name, type, logo_url )`)
     .eq('status', 'live')
     .eq('is_active', true)
     .eq('needs_review', false)
@@ -184,8 +186,9 @@ export async function fetchDealOfTheDay(): Promise<SweetSpotRow | null> {
 
   return {
     ...(data as any),
-    program_name: (data as any).loyalty_programs?.name ?? null,
-    program_type: (data as any).loyalty_programs?.type ?? null,
+    program_name:     (data as any).loyalty_programs?.name     ?? null,
+    program_type:     (data as any).loyalty_programs?.type     ?? null,
+    program_logo_url: (data as any).loyalty_programs?.logo_url ?? null,
     loyalty_programs: undefined,
   } as SweetSpotRow;
 }

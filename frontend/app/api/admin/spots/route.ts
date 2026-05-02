@@ -50,8 +50,8 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(spots);
 }
 
-// ── PATCH — update status or price ───────────────────────────
-// Body: { id: string, action?: 'approve'|'go_live'|'reject', est_cash_value_inr?: number }
+// ── PATCH — update status, price, or points ──────────────────
+// Body: { id, action?, est_cash_value_inr?, points_required? }
 export async function PATCH(req: NextRequest) {
   if (!await verifyAdmin(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -61,9 +61,10 @@ export async function PATCH(req: NextRequest) {
     id: string;
     action?: 'approve' | 'go_live' | 'reject';
     est_cash_value_inr?: number;
+    points_required?: number;
   };
 
-  const { id, action, est_cash_value_inr } = body;
+  const { id, action, est_cash_value_inr, points_required } = body;
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
 
   const updates: Record<string, unknown> = {
@@ -82,6 +83,10 @@ export async function PATCH(req: NextRequest) {
 
   if (est_cash_value_inr !== undefined) {
     updates.est_cash_value_inr = est_cash_value_inr;
+  }
+
+  if (points_required !== undefined && points_required > 0) {
+    updates.points_required = points_required;
   }
 
   const { error } = await supabaseAdmin

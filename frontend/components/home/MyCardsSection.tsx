@@ -30,11 +30,11 @@ const DEFAULT_BEST_CPP = 2.5;
 
 // ── Mock cards (shown if Supabase cards table is empty) ────────
 const MOCK_CARDS: CardRow[] = [
-  { id: 'hdfc-infinia',  name: 'HDFC Infinia',    issuer: 'HDFC',  points_currency_name: 'Reward Points', base_earn_rate: 3.3, is_active: true, cash_redemption_cpp: 0.5, created_at: '' },
-  { id: 'axis-atlas',    name: 'Axis Atlas',      issuer: 'Axis',  points_currency_name: 'EDGE Miles',    base_earn_rate: 5.0, is_active: true, cash_redemption_cpp: 0.4, created_at: '' },
-  { id: 'axis-olympus',  name: 'Axis Olympus',    issuer: 'Axis',  points_currency_name: 'EDGE Miles',    base_earn_rate: 5.0, is_active: true, cash_redemption_cpp: 0.4, created_at: '' },
-  { id: 'sbi-aurum',     name: 'SBI Aurum',       issuer: 'SBI',   points_currency_name: 'Reward Points', base_earn_rate: 2.0, is_active: true, cash_redemption_cpp: 0.35, created_at: '' },
-  { id: 'amex-platinum', name: 'Amex Platinum',   issuer: 'Amex',  points_currency_name: 'MR Points',     base_earn_rate: 5.0, is_active: true, cash_redemption_cpp: 0.5, created_at: '' },
+  { id: 'hdfc-infinia',  name: 'HDFC Infinia',    issuer: 'HDFC',  points_currency_name: 'Reward Points', base_earn_rate: 3.3, is_active: true, cash_redemption_cpp: 0.5, logo_url: null, created_at: '' },
+  { id: 'axis-atlas',    name: 'Axis Atlas',      issuer: 'Axis',  points_currency_name: 'EDGE Miles',    base_earn_rate: 5.0, is_active: true, cash_redemption_cpp: 0.4, logo_url: null, created_at: '' },
+  { id: 'axis-olympus',  name: 'Axis Olympus',    issuer: 'Axis',  points_currency_name: 'EDGE Miles',    base_earn_rate: 5.0, is_active: true, cash_redemption_cpp: 0.4, logo_url: null, created_at: '' },
+  { id: 'sbi-aurum',     name: 'SBI Aurum',       issuer: 'SBI',   points_currency_name: 'Reward Points', base_earn_rate: 2.0, is_active: true, cash_redemption_cpp: 0.35, logo_url: null, created_at: '' },
+  { id: 'amex-platinum', name: 'Amex Platinum',   issuer: 'Amex',  points_currency_name: 'MR Points',     base_earn_rate: 5.0, is_active: true, cash_redemption_cpp: 0.5, logo_url: null, created_at: '' },
 ];
 
 // ── Issuer colour map ──────────────────────────────────────────

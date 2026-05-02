@@ -35,6 +35,7 @@ export interface Database {
           base_earn_rate: number;
           is_active: boolean;
           cash_redemption_cpp: number;   // migration 001
+          logo_url: string | null;       // migration 014 — Clearbit by issuer domain
           created_at: string;
         };
         Insert: Omit<Database['public']['Tables']['cards']['Row'], 'created_at'>;
@@ -54,6 +55,7 @@ export interface Database {
           min_transfer_in: number;
           transfer_processing_days: number;
           website_url: string | null;
+          logo_url: string | null;       // migration 014 — gstatic (airlines) or Clearbit (hotels)
           is_active: boolean;
           created_at: string;
         };
@@ -135,6 +137,7 @@ export interface Database {
           // ── virtual: populated from JOIN with loyalty_programs ──
           program_name?: string | null;
           program_type?: 'flight' | 'hotel' | 'hybrid' | null;
+          program_logo_url?: string | null;  // migration 014 — logo from loyalty_programs
         };
         Insert: Omit<
           Database['public']['Tables']['sweet_spots']['Row'],

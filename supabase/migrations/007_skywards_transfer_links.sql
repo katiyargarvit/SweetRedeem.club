@@ -1,0 +1,19 @@
+-- ============================================================
+-- Migration 007 — Emirates Skywards Transfer Links
+-- ============================================================
+-- Emirates Skywards (program ...0010) is already in loyalty_programs
+-- and Amex Plat → Skywards 2:1 is already in seed.sql (ID ...0051).
+--
+-- Confirmed Indian card transfer partners for Emirates Skywards:
+--   ✅ Amex Membership Rewards → Skywards 2:1  (seed.sql, ID ...0051)
+--   ❌ HDFC Infinia / Diners Club Black         (NOT a Skywards partner — confirmed April 2026)
+--   ❌ Axis Atlas / Travel Edge                 (NOT a Skywards partner — confirmed April 2026)
+--
+-- Skywards is primarily an Amex redemption in the Indian card ecosystem.
+-- This migration is intentionally empty — no additional transfer links needed.
+--
+-- Run order:
+--   schema.sql → seed.sql → 001 → 002 → 003 → 004 → 005 → 006 → 007 (this)
+-- ============================================================
+
+-- No INSERT required. All valid Skywards transfer links are already in seed.sql.

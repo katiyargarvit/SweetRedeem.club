@@ -29,3 +29,6 @@ scraper/.env.local
 .env
 .env.local
 .env.*.local
+
+# Cursor MCP config (contains API tokens — never commit)
+.cursor/mcp.json

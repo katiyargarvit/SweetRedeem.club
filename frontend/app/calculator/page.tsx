@@ -230,12 +230,12 @@ export default function CalculatorPage() {
 
   // Mock cards — use same UUIDs as seed.sql so CARD_META lookup works in fallback too
   const MOCK_CARDS: CardRow[] = [
-    { id: '00000000-0000-0000-0001-000000000001', name: 'HDFC Infinia',          issuer: 'HDFC Bank',        points_currency_name: 'Reward Points',     base_earn_rate: 3.33, is_active: true, cash_redemption_cpp: 0.50, created_at: '' },
-    { id: '00000000-0000-0000-0001-000000000003', name: 'Axis Atlas',            issuer: 'Axis Bank',        points_currency_name: 'EDGE Miles',        base_earn_rate: 2.00, is_active: true, cash_redemption_cpp: 0.20, created_at: '' },
-    { id: '00000000-0000-0000-0001-000000000008', name: 'Axis Magnus (Burgundy)', issuer: 'Axis Bank',       points_currency_name: 'EDGE Reward Points', base_earn_rate: 4.00, is_active: true, cash_redemption_cpp: 0.20, created_at: '' },
-    { id: '00000000-0000-0000-0001-000000000006', name: 'Amex Platinum Travel',  issuer: 'American Express', points_currency_name: 'Membership Rewards', base_earn_rate: 3.00, is_active: true, cash_redemption_cpp: 0.25, created_at: '' },
-    { id: '00000000-0000-0000-0001-000000000013', name: 'HSBC Premier',          issuer: 'HSBC Bank',        points_currency_name: 'Reward Points',     base_earn_rate: 2.00, is_active: true, cash_redemption_cpp: 0.25, created_at: '' },
-    { id: '00000000-0000-0000-0001-000000000004', name: 'SBI Aurum',             issuer: 'SBI Card',         points_currency_name: 'Reward Points',     base_earn_rate: 4.00, is_active: true, cash_redemption_cpp: 0.25, created_at: '' },
+    { id: '00000000-0000-0000-0001-000000000001', name: 'HDFC Infinia',          issuer: 'HDFC Bank',        points_currency_name: 'Reward Points',     base_earn_rate: 3.33, is_active: true, cash_redemption_cpp: 0.50, logo_url: null, created_at: '' },
+    { id: '00000000-0000-0000-0001-000000000003', name: 'Axis Atlas',            issuer: 'Axis Bank',        points_currency_name: 'EDGE Miles',        base_earn_rate: 2.00, is_active: true, cash_redemption_cpp: 0.20, logo_url: null, created_at: '' },
+    { id: '00000000-0000-0000-0001-000000000008', name: 'Axis Magnus (Burgundy)', issuer: 'Axis Bank',       points_currency_name: 'EDGE Reward Points', base_earn_rate: 4.00, is_active: true, cash_redemption_cpp: 0.20, logo_url: null, created_at: '' },
+    { id: '00000000-0000-0000-0001-000000000006', name: 'Amex Platinum Travel',  issuer: 'American Express', points_currency_name: 'Membership Rewards', base_earn_rate: 3.00, is_active: true, cash_redemption_cpp: 0.25, logo_url: null, created_at: '' },
+    { id: '00000000-0000-0000-0001-000000000013', name: 'HSBC Premier',          issuer: 'HSBC Bank',        points_currency_name: 'Reward Points',     base_earn_rate: 2.00, is_active: true, cash_redemption_cpp: 0.25, logo_url: null, created_at: '' },
+    { id: '00000000-0000-0000-0001-000000000004', name: 'SBI Aurum',             issuer: 'SBI Card',         points_currency_name: 'Reward Points',     base_earn_rate: 4.00, is_active: true, cash_redemption_cpp: 0.25, logo_url: null, created_at: '' },
   ];
 
   useEffect(() => {

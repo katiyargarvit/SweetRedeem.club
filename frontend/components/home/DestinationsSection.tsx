@@ -10,8 +10,8 @@ const DESTINATIONS = [
     highlight: 'ANA The Room · 75K pts',
     cpp: '₹2.1/pt',
     gradient: 'linear-gradient(160deg, #0f0c29, #302b63, #24243e)',
-    // Replace with real photo: https://your-cdn.com/seoul.jpg
-    image: null as string | null,
+    // Unsplash — Gyeongbokgung Palace / Seoul cityscape (free for use)
+    image: 'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?auto=format&fit=crop&w=500&q=80' as string | null,
   },
   {
     city: 'London',
@@ -19,7 +19,8 @@ const DESTINATIONS = [
     highlight: 'Virgin Atlantic · 29K pts',
     cpp: '₹2.8/pt',
     gradient: 'linear-gradient(160deg, #1a1a2e, #16213e, #0f3460)',
-    image: null as string | null,
+    // Unsplash — Tower Bridge at sunset
+    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=500&q=80' as string | null,
   },
   {
     city: 'Dubai',
@@ -27,7 +28,8 @@ const DESTINATIONS = [
     highlight: 'Emirates First · 102K pts',
     cpp: '₹2.4/pt',
     gradient: 'linear-gradient(160deg, #373b44, #4286f4)',
-    image: null as string | null,
+    // Unsplash — Burj Khalifa / Dubai skyline
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=500&q=80' as string | null,
   },
 ];
 
