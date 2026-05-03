@@ -1,14 +1,35 @@
 'use client';
 
 // ============================================================
-// RTBSection -- "Why it works." feature list
-// Figma Make design (03-May): expandable items with inline SVG icons
+// RTBSection -- "Why it works." + scroll-driven word reveal
+// Figma Make design: "Fly at the Front." reveals word-by-word
+// Animation mirrors Framer Motion useScroll pattern but in
+// vanilla React so no extra dependency is needed.
 // ============================================================
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 const BLUE = '#2563EB';
 
+// ── Animated headline copy (word index space is continuous) ──
+const R_BODY  = ['Stop', 'settling', 'for', 'basic', 'statement', 'credits.'];
+const R_STOP  = ['Real', 'value', 'lives', 'in', 'exclusive', 'award', 'seats.'];
+const R_FLY   = ['Fly', 'at', 'the', 'Front.'];
+const R_TOTAL = R_BODY.length + R_STOP.length + R_FLY.length;
+
+// Band: words start lighting up at 4% scroll, finish at 52%
+const BAND_S = 0.04;
+const BAND_E = 0.52;
+
+function getOp(idx: number, prog: number): number {
+  const p    = isNaN(prog) ? 0 : prog;
+  const span = BAND_E - BAND_S;
+  const ws   = BAND_S + (idx / R_TOTAL) * span;
+  const we   = ws + (span / R_TOTAL) * 2.8;
+  return Math.min(1, Math.max(0.13, (p - ws) / (we - ws)));
+}
+
+// ── Feature items ────────────────────────────────────────────
 const ITEMS = [
   {
     heading: 'Unlock True Award Seats',
@@ -67,53 +88,118 @@ function KeyIcon() {
 
 export default function RTBSection() {
   const [expanded, setExpanded] = useState<number | null>(null);
+  const sectionRef              = useRef<HTMLDivElement>(null);
+  const [revealProg, setRevealProg] = useState(0);
+
+  // Scroll progress: 0 = section bottom enters viewport, 1 = section top exits
+  const onScroll = useCallback(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const rect    = el.getBoundingClientRect();
+    const windowH = window.innerHeight;
+    // Normalize: 0 when bottom of section enters, 1 when top exits top of viewport
+    const progress = 1 - rect.bottom / (windowH + rect.height);
+    setRevealProg(Math.min(1, Math.max(0, progress)));
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll(); // seed initial value
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [onScroll]);
+
+  // Shared word renderer with continuous idx
+  const WordSpan = ({ w, idx }: { w: string; idx: number }) => (
+    <span style={{
+      color:      `rgba(255,255,255,${getOp(idx, revealProg)})`,
+      marginRight: '0.18em',
+      display:    'inline-block',
+      transition: 'color 0.08s linear',
+    }}>
+      {w}
+    </span>
+  );
+
+  const r_body_i  = R_BODY.map((w, i) => ({ w, idx: i }));
+  const r_stop_i  = R_STOP.map((w, i) => ({ w, idx: R_BODY.length + i }));
+  const r_fly_i   = R_FLY.map((w, i)  => ({ w, idx: R_BODY.length + R_STOP.length + i }));
 
   return (
-    <section style={{
-      background:   '#fff',
-      borderTop:    '1px solid #F1F5F9',
-      padding:      '40px 20px 48px',
-      position:     'relative',
-      overflow:     'hidden',
-    }}>
+    <section
+      ref={sectionRef}
+      style={{
+        background: '#0B1120',
+        padding:    '48px 20px 52px',
+        position:   'relative',
+        overflow:   'hidden',
+      }}
+    >
       {/* Ambient glow */}
       <div style={{
         position:      'absolute',
         top:           0,
         left:          '50%',
         transform:     'translateX(-50%)',
-        width:         300,
-        height:        180,
+        width:         320,
+        height:        200,
         borderRadius:  9999,
-        background:    'radial-gradient(ellipse at center, rgba(59,130,246,0.06) 0%, transparent 70%)',
+        background:    'radial-gradient(ellipse at center, rgba(59,130,246,0.10) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
-      {/* Header */}
-      <div style={{ marginBottom: 36, position: 'relative' }}>
-        <p style={{
-          fontSize:      10,
-          fontWeight:    700,
-          color:         '#94a3b8',
-          letterSpacing: '1.1px',
-          textTransform: 'uppercase',
-          margin:        '0 0 8px',
-        }}>
-          THE SWEETREDEEM EDGE
-        </p>
-        <h2 style={{
-          fontSize:      42,
-          fontWeight:    800,
-          color:         'rgba(15,23,42,0.12)',
-          letterSpacing: '-0.025em',
-          lineHeight:    1.08,
-          margin:        0,
-        }}>
-          Why it works.
-        </h2>
+      {/* Label */}
+      <p style={{
+        fontSize:      10,
+        fontWeight:    700,
+        color:         '#475569',
+        letterSpacing: '1.1px',
+        textTransform: 'uppercase',
+        margin:        '0 0 20px',
+        position:      'relative',
+      }}>
+        THE SWEETREDEEM EDGE
+      </p>
+
+      {/* ── Scroll-driven headline ──────────────────────── */}
+      <div style={{ marginBottom: 44, position: 'relative', lineHeight: 1.22 }}>
+        {/* Line 1 — body */}
+        <div style={{ fontSize: 38, fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 2 }}>
+          {r_body_i.map(({ w, idx }) => <WordSpan key={idx} w={w} idx={idx} />)}
+        </div>
+        {/* Line 2 — stop */}
+        <div style={{ fontSize: 38, fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 2 }}>
+          {r_stop_i.map(({ w, idx }) => <WordSpan key={idx} w={w} idx={idx} />)}
+        </div>
+        {/* Line 3 — "Fly at the Front." — gradient when fully lit */}
+        <div style={{ fontSize: 44, fontWeight: 900, letterSpacing: '-0.03em' }}>
+          {r_fly_i.map(({ w, idx }) => {
+            const op = getOp(idx, revealProg);
+            const fullyLit = op >= 0.98;
+            return (
+              <span
+                key={idx}
+                style={{
+                  marginRight:              '0.18em',
+                  display:                  'inline-block',
+                  transition:               'color 0.08s linear',
+                  ...(fullyLit
+                    ? {
+                        background:               'linear-gradient(90deg,#2563EB 0%,#6366f1 100%)',
+                        WebkitBackgroundClip:      'text',
+                        WebkitTextFillColor:       'transparent',
+                        backgroundClip:            'text',
+                      }
+                    : { color: `rgba(255,255,255,${op})` }),
+                }}
+              >
+                {w}
+              </span>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Feature items */}
+      {/* ── Feature items ───────────────────────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {ITEMS.map((item, i) => {
           const Icon = item.icon;
@@ -121,7 +207,7 @@ export default function RTBSection() {
 
           return (
             <div key={i} style={{
-              borderBottom:  i < ITEMS.length - 1 ? '1px solid #f1f5f9' : 'none',
+              borderBottom:  i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
               paddingBottom: i < ITEMS.length - 1 ? 28 : 0,
               marginBottom:  i < ITEMS.length - 1 ? 28 : 0,
               display:       'flex',
@@ -133,14 +219,14 @@ export default function RTBSection() {
                 width:          40,
                 height:         40,
                 borderRadius:   9999,
-                background:     'rgba(15,23,42,0.04)',
-                border:         '0.75px solid #e2e8f0',
+                background:     'rgba(255,255,255,0.06)',
+                border:         '0.75px solid rgba(255,255,255,0.1)',
                 display:        'flex',
                 alignItems:     'center',
                 justifyContent: 'center',
                 flexShrink:     0,
                 marginTop:      4,
-                color:          '#94a3b8',
+                color:          '#64748b',
               }}>
                 <Icon />
               </div>
@@ -148,9 +234,9 @@ export default function RTBSection() {
               {/* Text */}
               <div style={{ flex: 1 }}>
                 <h3 style={{
-                  fontSize:      20,
+                  fontSize:      18,
                   fontWeight:    700,
-                  color:         'rgba(15,23,42,0.14)',
+                  color:         '#f1f5f9',
                   letterSpacing: '-0.01em',
                   margin:        '0 0 8px',
                   lineHeight:    1.2,
@@ -160,7 +246,7 @@ export default function RTBSection() {
                 <p style={{
                   fontSize:   13,
                   fontWeight: 500,
-                  color:      '#64748b',
+                  color:      '#94a3b8',
                   lineHeight: 1.65,
                   margin:     '0 0 10px',
                   maxWidth:   320,
@@ -198,11 +284,11 @@ export default function RTBSection() {
                   <p style={{
                     fontSize:   13,
                     fontWeight: 500,
-                    color:      '#334155',
+                    color:      '#cbd5e1',
                     lineHeight: 1.65,
                     margin:     '12px 0 0',
                     paddingTop: 12,
-                    borderTop:  '1px solid rgba(0,0,0,0.06)',
+                    borderTop:  '1px solid rgba(255,255,255,0.08)',
                     maxWidth:   320,
                   }}>
                     {item.detail}

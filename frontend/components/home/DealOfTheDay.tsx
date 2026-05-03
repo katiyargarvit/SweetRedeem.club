@@ -2,7 +2,7 @@
 
 // ============================================================
 // DealOfTheDay -- Figma Make approved design (03-May)
-// Live Supabase data, brandfetch.io logos, carousel
+// Pills ABOVE card, IATA->city names, brandfetch logos
 // ============================================================
 
 import { useState, useRef, useEffect } from 'react';
@@ -10,7 +10,40 @@ import { useRouter } from 'next/navigation';
 import type { SweetSpotRow } from '@/lib/database.types';
 import { formatINRFull, formatPoints } from '@/lib/supabase-queries';
 
-// ── Destination image map (Unsplash) ──────────────────────────
+// ── IATA code -> City name ────────────────────────────────────
+const IATA_CITY: Record<string, string> = {
+  // India
+  BOM: 'Mumbai',    DEL: 'Delhi',       BLR: 'Bengaluru',  CCU: 'Kolkata',
+  MAA: 'Chennai',   HYD: 'Hyderabad',   AMD: 'Ahmedabad',  GOI: 'Goa',
+  PNQ: 'Pune',      COK: 'Kochi',       JAI: 'Jaipur',     IXC: 'Chandigarh',
+  // Asia Pacific
+  SIN: 'Singapore', BKK: 'Bangkok',     KUL: 'Kuala Lumpur', NRT: 'Tokyo',
+  HND: 'Tokyo',     ICN: 'Seoul',       HKG: 'Hong Kong',  PEK: 'Beijing',
+  PVG: 'Shanghai',  SYD: 'Sydney',      MEL: 'Melbourne',  BNE: 'Brisbane',
+  AKL: 'Auckland',  MNL: 'Manila',      CGK: 'Jakarta',    BKI: 'Kota Kinabalu',
+  // Middle East
+  DXB: 'Dubai',     AUH: 'Abu Dhabi',   DOH: 'Doha',       KWI: 'Kuwait',
+  BAH: 'Bahrain',   RUH: 'Riyadh',      AMM: 'Amman',
+  // Europe
+  LHR: 'London',    LGW: 'London',      CDG: 'Paris',      FRA: 'Frankfurt',
+  AMS: 'Amsterdam', ZRH: 'Zurich',      FCO: 'Rome',       BCN: 'Barcelona',
+  MXP: 'Milan',     MAD: 'Madrid',      MUC: 'Munich',     VIE: 'Vienna',
+  CPH: 'Copenhagen',ARN: 'Stockholm',   OSL: 'Oslo',       HEL: 'Helsinki',
+  BRU: 'Brussels',  LIS: 'Lisbon',      ATH: 'Athens',     IST: 'Istanbul',
+  // North America
+  JFK: 'New York',  EWR: 'New York',    LAX: 'Los Angeles',SFO: 'San Francisco',
+  ORD: 'Chicago',   MIA: 'Miami',       BOS: 'Boston',     ATL: 'Atlanta',
+  DFW: 'Dallas',    SEA: 'Seattle',     DEN: 'Denver',     IAD: 'Washington DC',
+  YYZ: 'Toronto',   YVR: 'Vancouver',   YUL: 'Montreal',
+  // South America & Africa
+  GRU: 'Sao Paulo', EZE: 'Buenos Aires',BOG: 'Bogota',     LIM: 'Lima',
+  NBO: 'Nairobi',   JNB: 'Johannesburg',CPT: 'Cape Town',  ADD: 'Addis Ababa',
+  // Indian Ocean & South Asia
+  MLE: 'Maldives',  CMB: 'Colombo',     DAC: 'Dhaka',      KTM: 'Kathmandu',
+  ISB: 'Islamabad', KHI: 'Karachi',
+};
+
+// ── Destination image map ─────────────────────────────────────
 const DEST_IMAGE_MAP: Record<string, string> = {
   SIN: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=900&q=80',
   BKK: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=900&q=80',
@@ -19,19 +52,19 @@ const DEST_IMAGE_MAP: Record<string, string> = {
   HND: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=900&q=80',
   ICN: 'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?auto=format&fit=crop&w=900&q=80',
   LHR: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=80',
+  LGW: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=80',
   CDG: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=80',
   FRA: 'https://images.unsplash.com/photo-1587330979470-3595ac045ab0?auto=format&fit=crop&w=900&q=80',
   AMS: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?auto=format&fit=crop&w=900&q=80',
   ZRH: 'https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&w=900&q=80',
   DXB: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80',
   AUH: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80',
+  DOH: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?auto=format&fit=crop&w=900&q=80',
   JFK: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?auto=format&fit=crop&w=900&q=80',
-  NYC: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?auto=format&fit=crop&w=900&q=80',
   EWR: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?auto=format&fit=crop&w=900&q=80',
-  YYZ: 'https://images.unsplash.com/photo-1517090504586-fde19ea6066f?auto=format&fit=crop&w=900&q=80',
   LAX: 'https://images.unsplash.com/photo-1534190760961-74e8c1c5c3da?auto=format&fit=crop&w=900&q=80',
   SFO: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=900&q=80',
-  ORD: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=900&q=80',
+  YYZ: 'https://images.unsplash.com/photo-1517090504586-fde19ea6066f?auto=format&fit=crop&w=900&q=80',
   SYD: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=900&q=80',
   MEL: 'https://images.unsplash.com/photo-1529543544282-ea669407fca3?auto=format&fit=crop&w=900&q=80',
   MLE: 'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=900&q=80',
@@ -59,6 +92,8 @@ const PROGRAM_DOMAIN: Record<string, string> = {
   vistara:        'airvistara.com',
   indigo:         'goindigo.in',
   spicejet:       'spicejet.com',
+  britishairways: 'britishairways.com',
+  qantas:         'qantas.com',
 };
 
 // Category -> readable label
@@ -73,22 +108,26 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 const CORAL = '#FF6B4A';
 
-// Parse route string into [from, to] — handles BOM–SIN, BOM->SIN, BOM → SIN formats
+// Parse route -> [fromCode, toCode]
+// Handles: "BOM-SIN on Singapore Airlines", "BOM->SIN", "BOM SIN"
 function parseRoute(route: string): [string, string] {
-  // Split on any arrow/dash separator (Unicode en-dash, arrow, hyphen-arrow)
-  const parts = route.split(/\s*[→–\-]{1,2}>\s*|\s*–\s*|\s*->\s*|\s*→\s*/).map(p => p.trim());
-  const from = parts[0] ?? '';
-  // Take just the first word of "to" part (handles "SIN on Singapore Airlines")
-  const to = (parts[1] ?? '').split(/\s/)[0] ?? '';
-  return [from, to];
+  // Strip trailing airline name ("on Singapore Airlines")
+  const clean = route.replace(/\s+on\s+.+$/i, '').trim();
+  // Split on any separator
+  const parts = clean.split(/\s*[→–\-]{1,2}>\s*|\s*–\s*|\s*->\s*|\s*→\s*|\s*-\s*/).map(p => p.trim());
+  const fromCode = (parts[0] ?? '').slice(0, 3).toUpperCase();
+  const toCode   = ((parts[1] ?? '').split(/\s/)[0] ?? '').slice(0, 3).toUpperCase();
+  return [fromCode, toCode];
 }
 
-// Destination image — extract dest IATA from route
+function codeToCity(code: string): string {
+  return IATA_CITY[code] ?? code;
+}
+
 function getCityImage(spot: SweetSpotRow): string {
   if (spot.category.startsWith('hotel')) return DEST_IMAGE_MAP.hotel;
-  const [, to] = parseRoute(spot.route_or_property);
-  const code = to.slice(0, 3).toUpperCase();
-  return DEST_IMAGE_MAP[code] ?? DEST_IMAGE_MAP.default;
+  const [, toCode] = parseRoute(spot.route_or_property);
+  return DEST_IMAGE_MAP[toCode] ?? DEST_IMAGE_MAP.default;
 }
 
 function getProgramDomain(spot: SweetSpotRow): string {
@@ -139,23 +178,64 @@ export default function DealOfTheDay({ spots }: Props) {
   const cityImg = getCityImage(spot);
 
   return (
-    <section style={{ background: '#fff', padding: '0 16px 28px' }}>
+    <section style={{ background: '#fff', padding: '4px 16px 28px' }}>
       <style>{`
-        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes fadeIn    { from { opacity: 0 } to { opacity: 1 } }
         @keyframes countdown { to { stroke-dashoffset: 0; } }
         .dotd-scroll::-webkit-scrollbar { display: none; }
-        .dotd-pills::-webkit-scrollbar { display: none; }
+        .dotd-pills::-webkit-scrollbar  { display: none; }
       `}</style>
 
+      {/* ── Section header ─────────────────────────────── */}
+      <div style={{ marginBottom: 10 }}>
+        <p style={{
+          fontSize: 10, fontWeight: 700, color: '#94a3b8',
+          letterSpacing: '1.1px', textTransform: 'uppercase', margin: '0 0 2px',
+        }}>
+          FEATURED
+        </p>
+        <h2 style={{
+          fontSize: 22, fontWeight: 800, color: '#0f172a',
+          letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2,
+        }}>
+          Deal of the Day
+        </h2>
+      </div>
+
+      {/* ── Points selector pills — OUTSIDE the card ───── */}
+      <div className="dotd-pills" style={{
+        display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 12,
+        paddingBottom: 2,
+      } as React.CSSProperties}>
+        {slides.map((d, pi) => (
+          <button
+            key={d.id}
+            onClick={() => handleSelect(pi)}
+            style={{
+              padding: '7px 14px', borderRadius: 20,
+              border: active === pi ? 'none' : '1px solid #e2e8f0',
+              background: active === pi ? '#0f172a' : '#f8fafc',
+              color: active === pi ? '#fff' : '#64748b',
+              fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              whiteSpace: 'nowrap', flexShrink: 0,
+              transition: 'all 0.15s',
+            }}
+          >
+            {formatPoints(d.points_required)} pts
+          </button>
+        ))}
+      </div>
+
+      {/* ── Main card ───────────────────────────────────── */}
       <div style={{
-        borderRadius: 28,
+        borderRadius: 24,
         overflow:     'hidden',
         boxShadow:    '0 20px 48px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.06)',
         border:       '1px solid rgba(0,0,0,0.06)',
       }}>
 
         {/* City photo with crossfade */}
-        <div style={{ height: 210, position: 'relative', overflow: 'hidden', background: '#1e293b' }}>
+        <div style={{ height: 200, position: 'relative', overflow: 'hidden', background: '#1e293b' }}>
           <img
             key={imgKey}
             src={cityImg}
@@ -169,25 +249,26 @@ export default function DealOfTheDay({ spots }: Props) {
           }} />
         </div>
 
-        {/* Scrollable dark panels */}
+        {/* Scrollable dark panels — one per slide */}
         <div
           ref={scrollRef}
           onScroll={handleScroll}
           className="dotd-scroll"
           style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
         >
-          {slides.map((s, i) => {
-            const [from, to] = parseRoute(s.route_or_property);
-            const sDomain    = getProgramDomain(s);
+          {slides.map((s) => {
+            const [fromCode, toCode] = parseRoute(s.route_or_property);
+            const fromCity  = codeToCity(fromCode);
+            const toCity    = codeToCity(toCode);
+            const sDomain   = getProgramDomain(s);
             const classLabel = CATEGORY_LABEL[s.category] ?? s.category;
-            const isHotel    = s.category.startsWith('hotel');
+            const isHotel   = s.category.startsWith('hotel');
 
             return (
               <div key={s.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center' }}>
-                {/* Dark section */}
                 <div style={{ background: '#111111', padding: '18px 18px 0' }}>
                   <h2 style={{
-                    fontSize: 24, fontWeight: 800, color: '#fff',
+                    fontSize: 22, fontWeight: 800, color: '#fff',
                     textTransform: 'uppercase', letterSpacing: '-0.01em',
                     lineHeight: 1.25, margin: '0 0 4px',
                   }}>
@@ -196,25 +277,6 @@ export default function DealOfTheDay({ spots }: Props) {
                   <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 14px' }}>
                     Hand-picked premium sweetspots updated daily!
                   </p>
-
-                  {/* Points selector pills */}
-                  <div className="dotd-pills" style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 14 } as React.CSSProperties}>
-                    {slides.map((d, pi) => (
-                      <button
-                        key={d.id}
-                        onClick={() => handleSelect(pi)}
-                        style={{
-                          padding: '6px 14px', borderRadius: 10, border: 'none',
-                          background: active === pi ? '#2d2d2d' : 'transparent',
-                          color:      active === pi ? '#fff' : '#64748b',
-                          fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                          whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s',
-                        }}
-                      >
-                        {formatPoints(d.points_required)} pts
-                      </button>
-                    ))}
-                  </div>
 
                   {/* White info card */}
                   <div
@@ -264,7 +326,6 @@ export default function DealOfTheDay({ spots }: Props) {
 
                     {/* Transfer chain */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                      {/* Credit card side */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
                         <div style={{
                           width: 30, height: 30, borderRadius: 8,
@@ -278,66 +339,60 @@ export default function DealOfTheDay({ spots }: Props) {
                           </svg>
                         </div>
                         <div>
-                          <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', lineHeight: 1.2, margin: 0 }}>
-                            Credit Card
-                          </p>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', lineHeight: 1.2, margin: 0 }}>Credit Card</p>
                           <p style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.2, margin: 0 }}>Points</p>
                         </div>
                       </div>
 
-                      {/* Arrow */}
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                         stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
                         style={{ flexShrink: 0 }}>
                         <path d="M5 12h14M12 5l7 7-7 7" />
                       </svg>
 
-                      {/* Program logo */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         <div style={{
                           width: 30, height: 30, borderRadius: 8, overflow: 'hidden',
-                          background: s.program_logo_url ? '#f8fafc' : '#0f172a',
-                          border: '1px solid #e2e8f0',
+                          background: '#f8fafc', border: '1px solid #e2e8f0',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                          padding: s.program_logo_url ? 2 : 0,
+                          padding: 2,
                         }}>
-                          {s.program_logo_url ? (
-                            <img
-                              src={s.program_logo_url}
-                              alt={s.program_name ?? ''}
-                              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).src = `https://cdn.brandfetch.io/${sDomain}/icon`;
-                              }}
-                            />
-                          ) : (
-                            <img
-                              src={`https://cdn.brandfetch.io/${sDomain}/icon`}
-                              alt={s.program_name ?? ''}
-                              style={{ width: 22, height: 22, objectFit: 'contain' }}
-                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          )}
+                          <img
+                            src={s.program_logo_url ?? `https://cdn.brandfetch.io/${sDomain}/icon`}
+                            alt={s.program_name ?? ''}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            onError={(e) => {
+                              const img = e.currentTarget as HTMLImageElement;
+                              if (!img.src.includes('brandfetch')) {
+                                img.src = `https://cdn.brandfetch.io/${sDomain}/icon`;
+                              } else {
+                                img.style.display = 'none';
+                              }
+                            }}
+                          />
                         </div>
                         <div>
                           <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', lineHeight: 1.2, margin: 0 }}>
                             {s.program_name}
                           </p>
                           <p style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.2, margin: 0 }}>
-                            {isHotel ? 'hotel points' : 'skywards'}
+                            {isHotel ? 'hotel points' : 'frequent flyer'}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Route + Class label (matches approved design) */}
+                    {/* Route: Mumbai -> London + Class */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{from}</span>
-                        <span style={{ fontSize: 14, color: '#94a3b8' }}>✈</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{to}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{fromCity}</span>
+                        <span style={{ fontSize: 13, color: '#94a3b8' }}>&#9992;</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{toCity}</span>
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, color: '#fff',
+                        background: '#0f172a', borderRadius: 6, padding: '3px 8px',
+                      }}>
                         {classLabel}
                       </span>
                     </div>
@@ -348,7 +403,7 @@ export default function DealOfTheDay({ spots }: Props) {
           })}
         </div>
 
-        {/* Dots + timer ring */}
+        {/* Dots + timer ring — bottom bar inside card */}
         <div style={{
           background: '#111111', padding: '12px 18px 16px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
