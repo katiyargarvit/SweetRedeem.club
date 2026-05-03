@@ -55,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
 
         {/* ── Page content ─────────────────────────────────── */}
-        <main style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 80 }}>
+        <main style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 100 }}>
           {children}
         </main>
 

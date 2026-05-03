@@ -1,285 +1,133 @@
 'use client';
 
 // ============================================================
-// HeroSection — animated hero matching Figma / V3 prototype
-//
-// Animations:
-//   - Rotating showcase: sentence fades as one block
-//     "Redeem [pts] [card] points for a sweet [deal]"
-//   - Value counter: counts up to the new value on each cycle
-//   - Stats row: slide-up on mount
+// HeroSection — Figma Make design (03-May)
+// Badge → Headline → Subtitle → Stats row
 // ============================================================
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
-// ── Rotating showcase data ──────────────────────────────────
-const SHOWCASE = [
-  { pts: '1,00,000', card: 'HDFC Infinia',  deal: 'Business Class flight', value: '₹2,40,000' },
-  { pts: '50,000',   card: 'Axis Atlas',    deal: 'flight to Singapore',   value: '₹1,05,000' },
-  { pts: '30,000',   card: 'Amex MRCC',     deal: 'premium hotel stay',    value: '₹78,000'   },
-  { pts: '75,000',   card: 'Axis Olympus',  deal: 'First Class upgrade',   value: '₹1,80,000' },
+const STATS = [
+  { value: '₹2.1L+',  label: 'Avg Value\nper 100K pts' },
+  { value: '50K+',    label: 'Routes\nAnalyzed'        },
+  { value: '₹1.5Cr+', label: 'Value\nUnlocked'         },
 ];
 
-// ── Tiny number counter hook ───────────────────────────────
-function useCountUp(target: string, duration = 900) {
-  const [display, setDisplay] = useState(target);
-  const prevRef = useRef(target);
-
-  useEffect(() => {
-    if (target === prevRef.current) return;
-    prevRef.current = target;
-
-    // Extract numeric part for animation (strip ₹ commas)
-    const raw = parseInt(target.replace(/[₹,]/g, ''), 10);
-    const prevRaw = parseInt(display.replace(/[₹,]/g, ''), 10) || 0;
-    const hasRupee = target.startsWith('₹');
-
-    const start = Date.now();
-    const tick = () => {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic
-      const ease = 1 - Math.pow(1 - progress, 3);
-      const current = Math.round(prevRaw + (raw - prevRaw) * ease);
-      const formatted = hasRupee
-        ? '₹' + current.toLocaleString('en-IN')
-        : current.toLocaleString('en-IN');
-      setDisplay(formatted);
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target, duration]);
-
-  return display;
-}
-
 export default function HeroSection() {
-  const [idx, setIdx]     = useState(0);
-  const [visible, setVisible] = useState(true);
   const [mounted, setMounted] = useState(false);
-
-  const current = SHOWCASE[idx];
-  const valueDisplay = useCountUp(current.value);
-
-  // Mount animation
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Rotate showcase every 3.5 s with a 400 ms fade-out/in
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setIdx(i => (i + 1) % SHOWCASE.length);
-        setVisible(true);
-      }, 400);
-    }, 3500);
-    return () => clearInterval(timer);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <section style={{
-      background: '#FFFFFF',
-      padding: '32px 20px 28px',
-      textAlign: 'center',
+      background:     '#fff',
+      padding:        '32px 20px 28px',
+      textAlign:      'center',
+      display:        'flex',
+      flexDirection:  'column',
+      alignItems:     'center',
     }}>
 
-      {/* ── Eyebrow badge ──────────────────────────────────── */}
-      <div
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          padding: '6px 14px 6px 10px',
-          borderRadius: 9999,
-          background: '#F5F7FF',
-          border: '0.75px solid #E0E7FF',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.07)',
-          marginBottom: 20,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(8px)',
-          transition: 'opacity 0.5s ease, transform 0.5s ease',
-        }}
-      >
-        <span style={{ fontSize: 13, color: '#4F46E5' }}>✦</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#4F46E5', letterSpacing: '0.01em' }}>
+      {/* ── Badge ──────────────────────────────────────────── */}
+      <div style={{
+        display:       'inline-flex',
+        alignItems:    'center',
+        gap:           6,
+        padding:       '6px 14px',
+        borderRadius:  9999,
+        background:    '#EFF6FF',
+        border:        '1px solid #DBEAFE',
+        marginBottom:  24,
+        opacity:       mounted ? 1 : 0,
+        transform:     mounted ? 'translateY(0)' : 'translateY(8px)',
+        transition:    'opacity 0.45s ease, transform 0.45s ease',
+      }}>
+        {/* Sparkles icon */}
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
+          <path d="M5 3l.7 1.8L7.5 5l-1.8.7L5 7.5l-.7-1.8L2.5 5l1.8-.7z" />
+          <path d="M19 17l.7 1.8L21.5 19l-1.8.7L19 21.5l-.7-1.8L16.5 19l1.8-.7z" />
+        </svg>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#2563EB', letterSpacing: '0.01em' }}>
           India&apos;s Premium Points Optimizer
         </span>
       </div>
 
-      {/* ── Main headline ───────────────────────────────────── */}
-      <div
-        style={{
-          marginBottom: 16,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(12px)',
-          transition: 'opacity 0.55s ease 0.1s, transform 0.55s ease 0.1s',
-        }}
-      >
-        <h1 style={{
-          fontSize: 40,
-          fontWeight: 800,
-          lineHeight: 1.12,
-          letterSpacing: '-1.2px',
-          color: '#0A0A0A',
-          margin: 0,
+      {/* ── Headline ───────────────────────────────────────── */}
+      <h1 style={{
+        fontSize:      36,
+        fontWeight:    800,
+        letterSpacing: '-0.025em',
+        lineHeight:    1.15,
+        color:         '#0f172a',
+        margin:        '0 0 16px',
+        opacity:       mounted ? 1 : 0,
+        transform:     mounted ? 'translateY(0)' : 'translateY(10px)',
+        transition:    'opacity 0.5s ease 0.06s, transform 0.5s ease 0.06s',
+      }}>
+        Unlock the True Value<br />of Your Points.{' '}
+        <span style={{
+          background: 'linear-gradient(90deg, #2563EB 0%, #6366f1 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor:  'transparent',
+          backgroundClip:       'text',
         }}>
-          Unlock the True Value
-        </h1>
-        <h1 style={{
-          fontSize: 40,
-          fontWeight: 800,
-          lineHeight: 1.12,
-          letterSpacing: '-1.2px',
-          margin: '2px 0 0',
-        }}>
-          of Your Points.{' '}
-          <span style={{
-            fontStyle: 'italic',
-            background: 'linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            Instantly.
-          </span>
-        </h1>
-      </div>
+          Instantly.
+        </span>
+      </h1>
 
-      {/* ── Animated showcase ───────────────────────────────── */}
-      <div
-        style={{
-          minHeight: 100,
-          marginBottom: 4,
-          opacity: mounted ? 1 : 0,
-          transition: 'opacity 0.6s ease 0.2s',
-        }}
-      >
-        {/* Rotating sentence — fades as one block */}
-        <p
-          style={{
-            fontSize: 13,
-            color: '#596475',
-            lineHeight: 1.85,
-            margin: '0 auto',
-            maxWidth: 340,
-            opacity: visible ? 1 : 0,
-            transition: 'opacity 0.35s ease',
-          }}
-        >
-          Redeem{' '}
-          <strong style={{ color: '#0A0A0A', fontWeight: 800 }}>{current.pts}</strong>
-          {' '}<strong style={{ color: '#0A0A0A', fontWeight: 800 }}>{current.card}</strong>
-          {' '}points for a sweet{' '}
-          <strong style={{ color: '#0A0A0A', fontWeight: 800 }}>{current.deal}</strong>
-        </p>
-
-        {/* "worth ₹X" — value counts up, never fades */}
-        <div style={{
-          display: 'flex', alignItems: 'baseline', gap: 6,
-          justifyContent: 'center', marginTop: 10,
-        }}>
-          <em style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 18,
-            fontWeight: 600,
-            color: '#8A9FB1',
-            fontStyle: 'italic',
-          }}>
-            worth
-          </em>
-          <span style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 40,
-            fontWeight: 700,
-            letterSpacing: '-0.03em',
-            color: '#00A86B',
-            fontVariantNumeric: 'tabular-nums',
-            fontFeatureSettings: '"tnum"',
-          }}>
-            {valueDisplay}
-          </span>
-        </div>
-
-        {/* Progress dots */}
-        <div style={{
-          display: 'flex', gap: 5, justifyContent: 'center', marginTop: 12,
-        }}>
-          {SHOWCASE.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => { setVisible(false); setTimeout(() => { setIdx(i); setVisible(true); }, 250); }}
-              style={{
-                width: i === idx ? 16 : 5,
-                height: 5,
-                borderRadius: 9999,
-                background: i === idx ? '#4F46E5' : '#E2E8F0',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-              aria-label={`Show example ${i + 1}`}
-            />
-          ))}
-        </div>
-      </div>
+      {/* ── Subtitle ───────────────────────────────────────── */}
+      <p style={{
+        fontSize:   14,
+        color:      '#64748b',
+        lineHeight: 1.65,
+        maxWidth:   300,
+        margin:     '0 auto 32px',
+        opacity:    mounted ? 1 : 0,
+        transform:  mounted ? 'translateY(0)' : 'translateY(8px)',
+        transition: 'opacity 0.55s ease 0.12s, transform 0.55s ease 0.12s',
+      }}>
+        Unlock free flights and dream vacations—while getting up to{' '}
+        <strong style={{ color: '#059669', fontWeight: 700 }}>4x more value</strong> from your points.
+      </p>
 
       {/* ── Stats row ──────────────────────────────────────── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          paddingTop: 12,
-          borderTop: '1px solid #F1F5F9',
-          marginTop: 8,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(10px)',
-          transition: 'opacity 0.65s ease 0.35s, transform 0.65s ease 0.35s',
-        }}
-      >
-        <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}>
-          <p style={{
-            fontSize: 24, fontWeight: 800,
-            color: '#0A0A0A', letterSpacing: '-0.6px',
-            lineHeight: 1, margin: 0,
-          }}>₹2.1L+</p>
-          <p style={{
-            fontSize: 9, fontWeight: 700, color: '#62748E',
-            textTransform: 'uppercase', letterSpacing: '0.5px',
-            marginTop: 5, marginBottom: 0, lineHeight: 1.3,
-          }}>Avg Value<br />per 100K pts</p>
-        </div>
-
-        <div style={{ width: 1, height: 36, background: '#E8EDF2', flexShrink: 0 }} />
-
-        <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}>
-          <p style={{
-            fontSize: 24, fontWeight: 800,
-            color: '#0A0A0A', letterSpacing: '-0.6px',
-            lineHeight: 1, margin: 0,
-          }}>50K+</p>
-          <p style={{
-            fontSize: 9, fontWeight: 700, color: '#62748E',
-            textTransform: 'uppercase', letterSpacing: '0.5px',
-            marginTop: 5, marginBottom: 0, lineHeight: 1.3,
-          }}>Routes<br />Analyzed</p>
-        </div>
-
-        <div style={{ width: 1, height: 36, background: '#E8EDF2', flexShrink: 0 }} />
-
-        <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}>
-          <p style={{
-            fontSize: 24, fontWeight: 800,
-            color: '#0A0A0A', letterSpacing: '-0.6px',
-            lineHeight: 1, margin: 0,
-          }}>₹1.5Cr+</p>
-          <p style={{
-            fontSize: 9, fontWeight: 700, color: '#62748E',
-            textTransform: 'uppercase', letterSpacing: '0.5px',
-            marginTop: 5, marginBottom: 0, lineHeight: 1.3,
-          }}>Value<br />Unlocked</p>
-        </div>
+      <div style={{
+        display:        'flex',
+        alignItems:     'flex-start',
+        width:          '100%',
+        opacity:        mounted ? 1 : 0,
+        transform:      mounted ? 'translateY(0)' : 'translateY(10px)',
+        transition:     'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s',
+      }}>
+        {STATS.map((s, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
+            <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{
+                fontSize:      22,
+                fontWeight:    800,
+                letterSpacing: '-0.03em',
+                color:         '#0f172a',
+                marginBottom:  2,
+              }}>
+                {s.value}
+              </span>
+              <span style={{
+                fontSize:       9,
+                fontWeight:     700,
+                color:          '#64748b',
+                textTransform:  'uppercase',
+                letterSpacing:  '0.08em',
+                lineHeight:     1.4,
+                whiteSpace:     'pre-line',
+              }}>
+                {s.label}
+              </span>
+            </div>
+            {i < 2 && (
+              <div style={{ width: 1, background: '#E2E8F0', alignSelf: 'center', height: 36, flexShrink: 0 }} />
+            )}
+          </div>
+        ))}
       </div>
 
     </section>
