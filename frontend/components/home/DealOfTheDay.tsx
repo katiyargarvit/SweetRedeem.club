@@ -1,7 +1,7 @@
 'use client';
 
 // ============================================================
-// DealOfTheDay -- Figma Make design (03-May)
+// DealOfTheDay -- Figma Make approved design (03-May)
 // Live Supabase data, brandfetch.io logos, carousel
 // ============================================================
 
@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import type { SweetSpotRow } from '@/lib/database.types';
 import { formatINRFull, formatPoints } from '@/lib/supabase-queries';
 
+// ── Destination image map (Unsplash) ──────────────────────────
 const DEST_IMAGE_MAP: Record<string, string> = {
   SIN: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=900&q=80',
   BKK: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=900&q=80',
@@ -38,6 +39,7 @@ const DEST_IMAGE_MAP: Record<string, string> = {
   default: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=80',
 };
 
+// Loyalty program -> brandfetch domain
 const PROGRAM_DOMAIN: Record<string, string> = {
   krisflyer:      'singaporeair.com',
   etihad:         'etihad.com',
@@ -59,16 +61,33 @@ const PROGRAM_DOMAIN: Record<string, string> = {
   spicejet:       'spicejet.com',
 };
 
+// Category -> readable label
+const CATEGORY_LABEL: Record<string, string> = {
+  first:          'First Class',
+  business:       'Business',
+  economy:        'Economy',
+  hotel_suite:    'Suite',
+  hotel_standard: 'Standard Room',
+  premium_eco:    'Premium Eco',
+};
+
 const CORAL = '#FF6B4A';
 
-function parseDestCode(route: string): string {
-  const m = route.match(/[>]\s*([A-Z]{3})/);
-  return m ? m[1] : 'default';
+// Parse route string into [from, to] — handles BOM–SIN, BOM->SIN, BOM → SIN formats
+function parseRoute(route: string): [string, string] {
+  // Split on any arrow/dash separator (Unicode en-dash, arrow, hyphen-arrow)
+  const parts = route.split(/\s*[→–\-]{1,2}>\s*|\s*–\s*|\s*->\s*|\s*→\s*/).map(p => p.trim());
+  const from = parts[0] ?? '';
+  // Take just the first word of "to" part (handles "SIN on Singapore Airlines")
+  const to = (parts[1] ?? '').split(/\s/)[0] ?? '';
+  return [from, to];
 }
 
+// Destination image — extract dest IATA from route
 function getCityImage(spot: SweetSpotRow): string {
   if (spot.category.startsWith('hotel')) return DEST_IMAGE_MAP.hotel;
-  const code = parseDestCode(spot.route_or_property);
+  const [, to] = parseRoute(spot.route_or_property);
+  const code = to.slice(0, 3).toUpperCase();
   return DEST_IMAGE_MAP[code] ?? DEST_IMAGE_MAP.default;
 }
 
@@ -76,17 +95,15 @@ function getProgramDomain(spot: SweetSpotRow): string {
   return PROGRAM_DOMAIN[spot.program_id] ?? `${spot.program_id.replace(/_/g, '')}.com`;
 }
 
-interface Props {
-  spots: SweetSpotRow[];
-}
+interface Props { spots: SweetSpotRow[]; }
 
 export default function DealOfTheDay({ spots }: Props) {
-  const router               = useRouter();
-  const slides               = spots.slice(0, 5);
-  const [active, setActive]  = useState(0);
-  const scrollRef            = useRef<HTMLDivElement>(null);
-  const timerRef             = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [imgKey, setImgKey]  = useState(0);
+  const router              = useRouter();
+  const slides              = spots.slice(0, 5);
+  const [active, setActive] = useState(0);
+  const scrollRef           = useRef<HTMLDivElement>(null);
+  const timerRef            = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [imgKey, setImgKey] = useState(0);
 
   if (!slides.length) return null;
 
@@ -122,31 +139,33 @@ export default function DealOfTheDay({ spots }: Props) {
   const cityImg = getCityImage(spot);
 
   return (
-    <section style={{ background: '#fff', padding: '4px 16px 24px' }}>
+    <section style={{ background: '#fff', padding: '0 16px 28px' }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes countdown { to { stroke-dashoffset: 0; } }
+        .dotd-scroll::-webkit-scrollbar { display: none; }
+        .dotd-pills::-webkit-scrollbar { display: none; }
+      `}</style>
+
       <div style={{
         borderRadius: 28,
         overflow:     'hidden',
-        boxShadow:    '0 20px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08)',
-        border:       '0.75px solid #f1f5f9',
+        boxShadow:    '0 20px 48px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.06)',
+        border:       '1px solid rgba(0,0,0,0.06)',
       }}>
 
         {/* City photo with crossfade */}
-        <div style={{ height: 208, position: 'relative', overflow: 'hidden', background: '#1e293b' }}>
+        <div style={{ height: 210, position: 'relative', overflow: 'hidden', background: '#1e293b' }}>
           <img
             key={imgKey}
             src={cityImg}
             alt={spot.route_or_property}
-            style={{
-              width: '100%', height: '100%', objectFit: 'cover',
-              display: 'block',
-              animation: 'fadeIn 0.45s ease',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', animation: 'fadeIn 0.5s ease' }}
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
-          <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }`}</style>
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%)',
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 100%)',
           }} />
         </div>
 
@@ -154,60 +173,42 @@ export default function DealOfTheDay({ spots }: Props) {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          style={{
-            display:   'flex',
-            overflowX: 'auto',
-            scrollSnapType: 'x mandatory',
-            scrollbarWidth: 'none',
-            WebkitOverflowScrolling: 'touch',
-          } as React.CSSProperties}
+          className="dotd-scroll"
+          style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
         >
           {slides.map((s, i) => {
-            const parts = s.route_or_property.split('>').map((p) => p.trim());
-            const from = parts[0] ?? '';
-            const to   = parts[1] ?? '';
-            const sDomain = getProgramDomain(s);
+            const [from, to] = parseRoute(s.route_or_property);
+            const sDomain    = getProgramDomain(s);
+            const classLabel = CATEGORY_LABEL[s.category] ?? s.category;
+            const isHotel    = s.category.startsWith('hotel');
 
             return (
               <div key={s.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center' }}>
-                <div style={{ background: '#111111', padding: '20px 20px 0' }}>
+                {/* Dark section */}
+                <div style={{ background: '#111111', padding: '18px 18px 0' }}>
                   <h2 style={{
-                    fontSize:      26,
-                    fontWeight:    800,
-                    color:         '#fff',
-                    textTransform: 'uppercase',
-                    letterSpacing: '-0.01em',
-                    lineHeight:    1.25,
-                    margin:        '0 0 6px',
+                    fontSize: 24, fontWeight: 800, color: '#fff',
+                    textTransform: 'uppercase', letterSpacing: '-0.01em',
+                    lineHeight: 1.25, margin: '0 0 4px',
                   }}>
                     Exceptional Value,<br />Right Now
                   </h2>
-                  <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 16px' }}>
+                  <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 14px' }}>
                     Hand-picked premium sweetspots updated daily!
                   </p>
 
                   {/* Points selector pills */}
-                  <div style={{
-                    display: 'flex', gap: 4,
-                    overflowX: 'auto', scrollbarWidth: 'none',
-                    marginBottom: 16,
-                  } as React.CSSProperties}>
+                  <div className="dotd-pills" style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 14 } as React.CSSProperties}>
                     {slides.map((d, pi) => (
                       <button
                         key={d.id}
                         onClick={() => handleSelect(pi)}
                         style={{
-                          padding:      '6px 12px',
-                          borderRadius: 12,
-                          border:       'none',
-                          background:   active === pi ? '#2d2d2d' : 'transparent',
-                          color:        active === pi ? '#fff' : '#64748b',
-                          fontSize:     12,
-                          fontWeight:   700,
-                          cursor:       'pointer',
-                          whiteSpace:   'nowrap',
-                          flexShrink:   0,
-                          transition:   'all 0.15s',
+                          padding: '6px 14px', borderRadius: 10, border: 'none',
+                          background: active === pi ? '#2d2d2d' : 'transparent',
+                          color:      active === pi ? '#fff' : '#64748b',
+                          fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s',
                         }}
                       >
                         {formatPoints(d.points_required)} pts
@@ -218,49 +219,42 @@ export default function DealOfTheDay({ spots }: Props) {
                   {/* White info card */}
                   <div
                     onClick={() => router.push('/sweet-spots/' + s.id)}
-                    style={{
-                      background:   '#fff',
-                      borderRadius: 16,
-                      padding:      16,
-                      cursor:       'pointer',
-                    }}
+                    style={{ background: '#fff', borderRadius: 18, padding: '16px 16px 14px', cursor: 'pointer' }}
                   >
                     {/* Points VS Retail */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                       <div>
-                        <p style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.9px', textTransform: 'uppercase', margin: '0 0 4px' }}>
+                        <p style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.9px', textTransform: 'uppercase', margin: '0 0 3px' }}>
                           SweetRedeem
                         </p>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
                           <span style={{ fontSize: 26, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em' }}>
                             {formatPoints(s.points_required)}
                           </span>
-                          <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>pts</span>
+                          <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>pts</span>
                         </div>
                       </div>
 
                       {/* VS badge */}
                       <div style={{
-                        width: 36, height: 36, borderRadius: 9999,
-                        background: '#0f172a',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0, margin: '0 8px',
+                        width: 34, height: 34, borderRadius: '50%', background: '#0f172a',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                       }}>
-                        <span style={{ fontSize: 10, fontWeight: 800, color: '#fff' }}>VS</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', letterSpacing: '0.05em' }}>VS</span>
                       </div>
 
                       {/* Retail price with strikethrough */}
                       <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.9px', textTransform: 'uppercase', margin: '0 0 4px' }}>
+                        <p style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.9px', textTransform: 'uppercase', margin: '0 0 3px' }}>
                           Retail Price
                         </p>
                         <div style={{ position: 'relative', display: 'inline-block' }}>
-                          <span style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em' }}>
+                          <span style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.025em' }}>
                             {formatINRFull(s.est_cash_value_inr)}
                           </span>
                           <div style={{
                             position: 'absolute', left: 0, right: 0,
-                            top: '50%', height: 2, background: '#FF2E93', transform: 'translateY(-50%)',
+                            top: '52%', height: 2, background: '#FF2E93', transform: 'translateY(-50%)',
                           }} />
                         </div>
                       </div>
@@ -269,32 +263,39 @@ export default function DealOfTheDay({ spots }: Props) {
                     <div style={{ height: 1, background: '#f1f5f9', margin: '0 0 12px' }} />
 
                     {/* Transfer chain */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      {/* Credit card side */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
                         <div style={{
-                          width: 32, height: 32, borderRadius: 8, overflow: 'hidden',
+                          width: 30, height: 30, borderRadius: 8,
                           background: '#f8fafc', border: '1px solid #e2e8f0',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                         }}>
-                          <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+                          <svg width="18" height="14" viewBox="0 0 20 16" fill="none">
                             <rect x="1" y="1" width="18" height="14" rx="2" stroke="#94a3b8" strokeWidth="1.5" fill="white" />
                             <rect x="1" y="5" width="18" height="3" fill="#e2e8f0" />
                             <rect x="3" y="10" width="5" height="1.5" rx="0.75" fill="#cbd5e1" />
                           </svg>
                         </div>
                         <div>
-                          <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', lineHeight: 1.2, margin: 0 }}>Credit Card</p>
-                          <p style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.2, margin: 0 }}>Points</p>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', lineHeight: 1.2, margin: 0 }}>
+                            Credit Card
+                          </p>
+                          <p style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.2, margin: 0 }}>Points</p>
                         </div>
                       </div>
 
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      {/* Arrow */}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                        style={{ flexShrink: 0 }}>
                         <path d="M5 12h14M12 5l7 7-7 7" />
                       </svg>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {/* Program logo */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         <div style={{
-                          width: 32, height: 32, borderRadius: 8, overflow: 'hidden',
+                          width: 30, height: 30, borderRadius: 8, overflow: 'hidden',
                           background: s.program_logo_url ? '#f8fafc' : '#0f172a',
                           border: '1px solid #e2e8f0',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -313,39 +314,31 @@ export default function DealOfTheDay({ spots }: Props) {
                             <img
                               src={`https://cdn.brandfetch.io/${sDomain}/icon`}
                               alt={s.program_name ?? ''}
-                              style={{ width: 24, height: 24, objectFit: 'contain' }}
+                              style={{ width: 22, height: 22, objectFit: 'contain' }}
                               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                             />
                           )}
                         </div>
                         <div>
-                          <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', lineHeight: 1.2, margin: 0 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', lineHeight: 1.2, margin: 0 }}>
                             {s.program_name}
                           </p>
-                          <p style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.2, margin: 0 }}>
-                            {s.program_type === 'hotel' ? 'hotel points' : 'miles program'}
+                          <p style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.2, margin: 0 }}>
+                            {isHotel ? 'hotel points' : 'skywards'}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Route + CPP */}
+                    {/* Route + Class label (matches approved design) */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: '#334155' }}>
-                        <span>{from}</span>
-                        <span style={{ color: '#cbd5e1', margin: '0 2px' }}>to</span>
-                        <span>{to}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{from}</span>
+                        <span style={{ fontSize: 14, color: '#94a3b8' }}>✈</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{to}</span>
                       </div>
-                      <span style={{
-                        fontSize:     11,
-                        fontWeight:   700,
-                        color:        s.cpp >= 2.0 ? '#009966' : '#E08A00',
-                        background:   s.cpp >= 2.0 ? 'rgba(0,153,102,0.08)' : 'rgba(224,138,0,0.08)',
-                        padding:      '3px 8px',
-                        borderRadius: 6,
-                        border:       `1px solid ${s.cpp >= 2.0 ? 'rgba(0,153,102,0.2)' : 'rgba(224,138,0,0.2)'}`,
-                      }}>
-                        Rs.{s.cpp.toFixed(2)}/pt
+                      <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>
+                        {classLabel}
                       </span>
                     </div>
                   </div>
@@ -357,51 +350,39 @@ export default function DealOfTheDay({ spots }: Props) {
 
         {/* Dots + timer ring */}
         <div style={{
-          background:     '#111111',
-          padding:        '12px 20px 16px',
-          display:        'flex',
-          alignItems:     'center',
-          justifyContent: 'space-between',
+          background: '#111111', padding: '12px 18px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
             {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => handleSelect(i)}
-                style={{
-                  height:       8,
-                  width:        i === active ? 28 : 8,
-                  borderRadius: 100,
-                  background:   i === active ? CORAL : '#cbd5e1',
-                  border:       'none',
-                  cursor:       'pointer',
-                  padding:      0,
-                  transition:   'width 0.25s ease, background 0.25s ease',
-                }}
-              />
+              <button key={i} onClick={() => handleSelect(i)} style={{
+                height: 7, width: i === active ? 26 : 7, borderRadius: 100,
+                background: i === active ? CORAL : 'rgba(255,255,255,0.2)',
+                border: 'none', cursor: 'pointer', padding: 0,
+                transition: 'width 0.25s ease, background 0.25s ease',
+              }} />
             ))}
           </div>
 
-          <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
+          {/* Timer ring */}
+          <div style={{ position: 'relative', width: 38, height: 38, flexShrink: 0 }}>
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 40 40">
-              <circle cx="20" cy="20" r="16" fill="none" stroke="#2d2d2d" strokeWidth="2.5" />
+              <circle cx="20" cy="20" r="15" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2.5" />
               <circle
                 key={`timer-${active}`}
-                cx="20" cy="20" r="16"
+                cx="20" cy="20" r="15"
                 fill="none" stroke={CORAL} strokeWidth="2.5" strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 16}`}
-                strokeDashoffset={`${2 * Math.PI * 16}`}
+                strokeDasharray={`${2 * Math.PI * 15}`}
+                strokeDashoffset={`${2 * Math.PI * 15}`}
                 style={{ animation: 'countdown 3s linear forwards' }}
               />
-              <style>{`@keyframes countdown { to { stroke-dashoffset: 0; } }`}</style>
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{
-                width: 32, height: 32, borderRadius: 9999,
-                background: '#111111',
+                width: 28, height: 28, borderRadius: '50%', background: '#1a1a1a',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{active + 1}</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#fff' }}>{active + 1}</span>
               </div>
             </div>
           </div>
