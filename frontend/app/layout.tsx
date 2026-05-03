@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Analytics } from '@vercel/analytics/next';
 import Header from '@/components/ui/Header';
 import BottomNav from '@/components/ui/BottomNav';
 import './globals.css';
@@ -55,12 +56,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
 
         {/* ── Page content ─────────────────────────────────── */}
-        <main style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 80 }}>
+        <main style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 100 }}>
           {children}
         </main>
 
         {/* ── Mobile bottom nav (client component — auto-highlights active tab) */}
         <BottomNav />
+
+        {/* ── Vercel Analytics ──────────────────────────────── */}
+        <Analytics />
 
       </body>
     </html>
