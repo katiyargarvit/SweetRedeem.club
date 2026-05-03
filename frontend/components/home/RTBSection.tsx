@@ -1,217 +1,141 @@
 'use client';
 
 // ============================================================
-// RTBSection -- "Why it works."
-// Figma Make design: WHITE bg, scroll-driven word reveal,
-// Framer Motion accordion.  Layout unchanged from original.
+// RTBSection — "THE SWEETREDEEM EDGE · Why it works."
+// 4 feature items with icons, headings, descriptions, CTAs
 // ============================================================
 
-import { useState, useRef } from 'react';
-import { useScroll, useMotionValueEvent, motion, AnimatePresence } from 'framer-motion';
-import { Star, Zap, ShieldCheck, Key, ChevronDown } from 'lucide-react';
+// Figma CDN icon assets (valid ~7 days — replace with your own)
+const ICONS = [
+  'https://www.figma.com/api/mcp/asset/15fc9529-3561-4827-beda-d68eab3984b8',   // unlock/star
+  'https://www.figma.com/api/mcp/asset/531d9679-00d1-4b85-a61b-da6484c786a0',   // lightning
+  'https://www.figma.com/api/mcp/asset/5618a1a0-0ac8-4c80-a788-aa59194ffde0',   // shield/verified
+  'https://www.figma.com/api/mcp/asset/30be85c7-aaa9-4d7f-9f1c-f8bc26b0c2c7',   // key/insider
+];
 
-const BLUE = '#2563EB';
+const EMOJI_FALLBACKS = ['⭐', '⚡', '🛡️', '🗝️'];
 
-// ── Spring presets ────────────────────────────────────────────
-const SPRING      = { type: 'spring', damping: 28, stiffness: 220 } as const;
-const SPRING_FAST = { type: 'spring', damping: 22, stiffness: 280 } as const;
-
-// ── RTB data — continuous word-index space 0-18 ───────────────
-// 3 title words + 4 items x 4 heading words = 19 total
-const RTB_TITLE = ['Why', 'it', 'works.'];
-const RTB_ITEMS = [
+const ITEMS = [
   {
-    id: 0, icon: Star,
-    headingWords: ['Unlock', 'True', 'Award', 'Seats'],
-    wordStart: 3,
-    subtext: 'Stop settling for basic statement credits. Real value lives in exclusive, limited airline inventories.',
-    seeHow: 'Standard portals like SmartBuy just buy cash fares, capping your points at 1x. We find hidden award tickets that multiply your yield up to 6x.',
+    heading: 'Unlock True Award Seats',
+    body: 'Stop settling for basic statement credits. Real value lives in exclusive, limited airline inventories.',
   },
   {
-    id: 1, icon: Zap,
-    headingWords: ['Zero', 'Math,', 'Total', 'Clarity'],
-    wordStart: 7,
-    subtext: 'Airline alliances and bank transfer ratios are literally designed to confuse you. We fix that.',
-    seeHow: 'We do the heavy lifting. By decoding every card, loyalty program, and transfer ratio, we reveal the exact true rupee value of your points instantly.',
+    heading: 'Zero Math, Total Clarity',
+    body: 'Airline alliances and bank transfer ratios are literally designed to confuse you. We fix that.',
   },
   {
-    id: 2, icon: ShieldCheck,
-    headingWords: ['Verified', 'by', 'the', 'Club'],
-    wordStart: 11,
-    subtext: "You aren't flying solo. Our community of expert optimizers actively uncovers the industry's best redemptions.",
-    seeHow: "Spot a massive value? Our members hunt, test, and upvote the smartest flight sweetspots daily, ensuring you only spend points on deals that actually work.",
+    heading: 'Verified by the Club',
+    body: "You aren't flying solo. Our community of expert optimizers actively uncovers the industry's best redemptions.",
   },
   {
-    id: 3, icon: Key,
-    headingWords: ['Get', 'the', 'Insider', 'Edge'],
-    wordStart: 15,
-    subtext: 'Banks want you to redeem your hard-earned points for pennies. We help you demand rupees.',
-    seeHow: 'Join a private community of optimizers securing verified, high-yield luxury redemptions that standard credit card travel portals actively try to keep hidden from you.',
+    heading: 'Get the Insider Edge',
+    body: "Banks want you to redeem your hard-earned points for pennies. We help you demand rupees.",
   },
 ];
-const RTB_TOTAL = 19; // 3 + 4*4
 
 export default function RTBSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start'],
-  });
-  const [prog, setProg] = useState(0);
-  useMotionValueEvent(scrollYProgress, 'change', (v) => setProg(isNaN(v) ? 0 : v));
-
-  const [expanded, setExpanded] = useState<number | null>(null);
-
-  // Per-word opacity — same ripple math as the reference
-  const BAND_S = 0.04, BAND_E = 0.52;
-  const opacity = (idx: number) => {
-    const span = BAND_E - BAND_S;
-    const ws   = BAND_S + (idx / RTB_TOTAL) * span;
-    const we   = ws + (span / RTB_TOTAL) * 2.8;
-    return Math.min(1, Math.max(0.14, (prog - ws) / (we - ws)));
-  };
-
   return (
-    <div
-      ref={ref}
-      style={{ background: '#ffffff', borderTop: '1px solid #F1F5F9', position: 'relative', overflow: 'hidden', padding: '40px 20px 48px' }}
-    >
-      {/* Ambient blue glow */}
+    <div style={{ background: '#fff', padding: '40px 20px 32px', position: 'relative', overflow: 'hidden' }}>
+
+      {/* ── Subtle radial glow ──────────────────────────── */}
       <div style={{
-        position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-        width: 300, height: 180, borderRadius: 9999, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.06) 0%, transparent 70%)',
+        position: 'absolute', top: 0, left: '15%',
+        width: 300, height: 180,
+        borderRadius: 9999,
+        background: 'radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%)',
+        pointerEvents: 'none',
       }} />
 
-      {/* Section label */}
+      {/* ── Label ─────────────────────────────────────── */}
       <p style={{
-        fontSize: 10, fontWeight: 700, color: '#94a3b8',
-        letterSpacing: '1.1px', textTransform: 'uppercase', margin: '0 0 8px', position: 'relative',
+        fontSize: 11, fontWeight: 700, color: '#90a1b9',
+        letterSpacing: '1.1px', textTransform: 'uppercase',
+        margin: '0 0 12px',
       }}>
         THE SWEETREDEEM EDGE
       </p>
 
-      {/* "Why it works." — scroll-driven word reveal */}
-      <div style={{ marginBottom: 36, position: 'relative', lineHeight: 1.08 }}>
-        {RTB_TITLE.map((w, i) => (
-          <span
+      {/* ── Watermark heading ────────────────────────── */}
+      <h2 style={{
+        fontSize: 42, fontWeight: 800,
+        color: 'rgba(15,23,42,0.13)',
+        letterSpacing: '-0.84px',
+        lineHeight: 1.08,
+        margin: '0 0 32px',
+      }}>
+        Why it works.
+      </h2>
+
+      {/* ── Feature list ──────────────────────────────── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+        {ITEMS.map((item, i) => (
+          <div
             key={i}
             style={{
-              color:        `rgba(15,23,42,${opacity(i)})`,
-              fontSize:     42,
-              fontWeight:   800,
-              letterSpacing: '-0.025em',
-              marginRight:  '0.18em',
-              display:      'inline-block',
-              transition:   'color 0.08s linear',
+              borderBottom: i < ITEMS.length - 1 ? '0.75px solid #f1f5f9' : 'none',
+              paddingBottom: i < ITEMS.length - 1 ? 28 : 0,
+              display: 'flex', gap: 16, alignItems: 'flex-start',
             }}
           >
-            {w}
-          </span>
+            {/* Icon */}
+            <div style={{
+              width: 40, height: 40, borderRadius: 9999,
+              background: 'rgba(15,23,42,0.04)',
+              border: '0.75px solid #e2e8f0',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+              marginTop: 4,
+            }}>
+              <img
+                src={ICONS[i]}
+                alt=""
+                style={{ width: 20, height: 20 }}
+                onError={(e) => {
+                  const el = e.currentTarget as HTMLImageElement;
+                  el.style.display = 'none';
+                  const span = document.createElement('span');
+                  span.style.fontSize = '16px';
+                  span.textContent = EMOJI_FALLBACKS[i];
+                  el.parentElement?.appendChild(span);
+                }}
+              />
+            </div>
+
+            {/* Text */}
+            <div style={{ flex: 1 }}>
+              {/* Heading — rendered as faint watermark text */}
+              <h3 style={{
+                fontSize: 20, fontWeight: 800,
+                color: 'rgba(15,23,42,0.14)',
+                letterSpacing: '-0.2px',
+                margin: '0 0 8px',
+              }}>
+                {item.heading}
+              </h3>
+              <p style={{
+                fontSize: 13, fontWeight: 500, color: '#64748b',
+                lineHeight: 1.65, margin: '0 0 10px',
+                maxWidth: 320,
+              }}>
+                {item.body}
+              </p>
+              <button style={{
+                background: 'none', border: 'none', padding: 0,
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}>
+                <span style={{
+                  fontSize: 12, fontWeight: 700, color: '#2563eb',
+                  letterSpacing: '0.48px',
+                }}>See how?</span>
+                <span style={{ fontSize: 12, color: '#2563eb' }}>↓</span>
+              </button>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* RTB item list */}
-      <div style={{ position: 'relative' }}>
-        {RTB_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const open = expanded === item.id;
-
-          return (
-            <div
-              key={item.id}
-              style={{
-                borderBottom:  item.id < RTB_ITEMS.length - 1 ? '1px solid #f1f5f9' : 'none',
-                paddingBottom: item.id < RTB_ITEMS.length - 1 ? 28 : 0,
-                marginBottom:  item.id < RTB_ITEMS.length - 1 ? 28 : 0,
-                display:       'flex',
-                gap:           16,
-                alignItems:    'flex-start',
-              }}
-            >
-              {/* Icon badge */}
-              <div style={{
-                width: 40, height: 40, borderRadius: 9999,
-                background: 'rgba(15,23,42,0.04)', border: '0.75px solid #e2e8f0',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0, marginTop: 4, color: '#94a3b8',
-              }}>
-                <Icon size={20} />
-              </div>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                {/* Heading — each word gets its own opacity */}
-                <div style={{ marginBottom: 8, lineHeight: 1.2 }}>
-                  {item.headingWords.map((w, wi) => (
-                    <span
-                      key={wi}
-                      style={{
-                        color:        `rgba(15,23,42,${opacity(item.wordStart + wi)})`,
-                        fontSize:     20,
-                        fontWeight:   700,
-                        letterSpacing: '-0.01em',
-                        marginRight:  '0.25em',
-                        display:      'inline-block',
-                        transition:   'color 0.08s linear',
-                      }}
-                    >
-                      {w}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Subtext — static */}
-                <p style={{
-                  color: '#64748b', fontSize: 13, fontWeight: 500,
-                  lineHeight: 1.65, marginBottom: 10, maxWidth: 320,
-                }}>
-                  {item.subtext}
-                </p>
-
-                {/* See how? toggle */}
-                <button
-                  onClick={() => setExpanded(open ? null : item.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                    color: BLUE, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
-                  }}
-                >
-                  See how?
-                  <motion.div
-                    animate={{ rotate: open ? 180 : 0 }}
-                    transition={SPRING_FAST}
-                  >
-                    <ChevronDown size={14} />
-                  </motion.div>
-                </button>
-
-                {/* Accordion drawer */}
-                <AnimatePresence>
-                  {open && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={SPRING}
-                      style={{ overflow: 'hidden' }}
-                    >
-                      <p style={{
-                        color: '#334155', fontSize: 13, fontWeight: 500,
-                        lineHeight: 1.65, maxWidth: 320,
-                        marginTop: 12, paddingTop: 12,
-                        borderTop: '1px solid rgba(0,0,0,0.06)',
-                      }}>
-                        {item.seeHow}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }

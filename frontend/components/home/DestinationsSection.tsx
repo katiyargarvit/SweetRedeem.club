@@ -1,153 +1,155 @@
-'use client';
-
 // ============================================================
 // DestinationsSection — "Where your points take you furthest"
-// Figma Make design (03-May): horizontal city photo cards
+// Horizontal scroll city cards with CPP / value overlay
 // ============================================================
-
-const CORAL = '#FF6B4A';
-const SERIF = "'Playfair Display', Georgia, serif";
 
 const DESTINATIONS = [
   {
-    city:    'Seoul',
+    city: 'Seoul',
     country: 'South Korea',
-    pricePt: '₹2.1/pt',
-    airline: 'ANA The Room',
-    points:  '75K pts',
-    src:     'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?auto=format&fit=crop&w=600&q=80',
+    highlight: 'ANA The Room · 75K pts',
+    cpp: '₹2.1/pt',
+    gradient: 'linear-gradient(160deg, #0f0c29, #302b63, #24243e)',
+    // Unsplash — Gyeongbokgung Palace / Seoul cityscape (free for use)
+    image: 'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?auto=format&fit=crop&w=500&q=80' as string | null,
   },
   {
-    city:    'London',
+    city: 'London',
     country: 'United Kingdom',
-    pricePt: '₹2.8/pt',
-    airline: 'Virgin Atlantic',
-    points:  '29K pts',
-    src:     'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80',
+    highlight: 'Virgin Atlantic · 29K pts',
+    cpp: '₹2.8/pt',
+    gradient: 'linear-gradient(160deg, #1a1a2e, #16213e, #0f3460)',
+    // Unsplash — Tower Bridge at sunset
+    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=500&q=80' as string | null,
   },
   {
-    city:    'Dubai',
+    city: 'Dubai',
     country: 'UAE',
-    pricePt: '₹3.2/pt',
-    airline: 'Emirates',
-    points:  '45K pts',
-    src:     'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    city:    'Singapore',
-    country: 'Singapore',
-    pricePt: '₹2.5/pt',
-    airline: 'KrisFlyer',
-    points:  '55K pts',
-    src:     'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    city:    'Maldives',
-    country: 'Maldives',
-    pricePt: '₹2.7/pt',
-    airline: 'World of Hyatt',
-    points:  '35K pts',
-    src:     'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=600&q=80',
+    highlight: 'Emirates First · 102K pts',
+    cpp: '₹2.4/pt',
+    gradient: 'linear-gradient(160deg, #373b44, #4286f4)',
+    // Unsplash — Burj Khalifa / Dubai skyline
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=500&q=80' as string | null,
   },
 ];
 
 export default function DestinationsSection() {
   return (
-    <section style={{ background: '#fff', borderTop: '1px solid #F1F5F9', paddingTop: 40, paddingBottom: 40 }}>
+    <div style={{ paddingTop: 40 }}>
 
-      {/* ── Header ─────────────────────────────────────── */}
-      <div style={{ padding: '0 20px', marginBottom: 20 }}>
+      {/* ── Section header ───────────────────────────────── */}
+      <div style={{ padding: '0 20px 16px' }}>
+        <p style={{
+          fontSize: 11, fontWeight: 700, color: '#90a1b9',
+          letterSpacing: '1.1px', textTransform: 'uppercase',
+          margin: '0 0 6px',
+        }}>
+          Handpicked routes
+        </p>
         <h2 style={{
-          fontSize:      28,
-          fontWeight:    800,
-          letterSpacing: '-0.025em',
-          lineHeight:    1.25,
-          color:         '#0f172a',
-          margin:        '0 0 4px',
+          fontSize: 22, fontWeight: 800, color: '#0f172b',
+          letterSpacing: '-0.5px', lineHeight: 1.25, margin: 0,
         }}>
           Where your points<br />take you furthest
         </h2>
-        <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>Explore by destination</p>
+        <p style={{ fontSize: 13, color: '#64748b', marginTop: 6, marginBottom: 0 }}>
+          Browse top sweet spots by destination
+        </p>
       </div>
 
-      {/* ── Horizontal scroll city cards ──────────────── */}
+      {/* ── Horizontal scroll ────────────────────────────── */}
       <div style={{
-        display:       'flex',
-        overflowX:     'auto',
-        gap:           12,
-        padding:       '4px 20px 8px',
+        display: 'flex', gap: 12,
+        padding: '0 20px 8px',
+        overflowX: 'auto',
         scrollbarWidth: 'none',
-        scrollSnapType: 'x mandatory',
-      } as React.CSSProperties}>
-        {DESTINATIONS.map((d) => (
+        msOverflowStyle: 'none',
+      }}>
+        {DESTINATIONS.map((dest, i) => (
           <div
-            key={d.city}
+            key={i}
             style={{
-              flex:           '0 0 auto',
-              width:          200,
-              height:         260,
-              borderRadius:   20,
-              overflow:       'hidden',
-              position:       'relative',
-              scrollSnapAlign: 'start',
-              cursor:         'pointer',
+              flexShrink: 0,
+              width: 180,
+              height: 220,
+              borderRadius: 20,
+              overflow: 'hidden',
+              position: 'relative',
+              cursor: 'pointer',
+              background: dest.gradient,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             }}
           >
-            {/* Photo */}
-            <img
-              src={d.src}
-              alt={d.city}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-            />
+            {/* Background image if available */}
+            {dest.image && (
+              <img
+                src={dest.image}
+                alt={dest.city}
+                style={{
+                  position: 'absolute', inset: 0,
+                  width: '100%', height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
+            )}
 
             {/* Gradient overlay */}
             <div style={{
-              position:   'absolute',
-              inset:      0,
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%)',
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%)',
             }} />
 
             {/* CPP badge */}
             <div style={{
-              position:     'absolute',
-              top:          12,
-              right:        12,
-              background:   CORAL,
+              position: 'absolute', top: 12, right: 12,
+              background: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(6px)',
+              padding: '4px 10px',
               borderRadius: 9999,
-              padding:      '4px 10px',
             }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>{d.pricePt}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#bfff00' }}>
+                {dest.cpp}
+              </span>
             </div>
 
             {/* City info */}
             <div style={{
-              position:      'absolute',
-              bottom:        0,
-              left:          0,
-              right:         0,
-              padding:       '0 16px 16px',
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              padding: '16px 14px',
             }}>
-              <h3 style={{
-                fontFamily:    SERIF,
-                fontSize:      26,
-                fontWeight:    700,
-                color:         '#fff',
-                lineHeight:    1.1,
-                margin:        '0 0 2px',
+              <p style={{
+                fontSize: 20, fontWeight: 800, color: '#fff',
+                letterSpacing: '-0.4px', margin: '0 0 2px',
               }}>
-                {d.city}
-              </h3>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', margin: '0 0 8px' }}>{d.country}</p>
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 8 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: 0 }}>
-                  {d.airline} · {d.points}
-                </p>
-              </div>
+                {dest.city}
+              </p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', margin: '0 0 6px' }}>
+                {dest.country}
+              </p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600, margin: 0 }}>
+                {dest.highlight}
+              </p>
             </div>
           </div>
         ))}
+
+        {/* See all card */}
+        <div style={{
+          flexShrink: 0, width: 100, height: 220,
+          borderRadius: 20,
+          border: '1.5px dashed #e2e8f0',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: 8, cursor: 'pointer',
+          color: '#90a1b9',
+        }}>
+          <span style={{ fontSize: 24 }}>→</span>
+          <p style={{ fontSize: 12, fontWeight: 600, textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
+            All<br />Routes
+          </p>
+        </div>
       </div>
 
-    </section>
+    </div>
   );
 }
