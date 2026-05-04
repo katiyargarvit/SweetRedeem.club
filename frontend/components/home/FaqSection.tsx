@@ -1,113 +1,153 @@
 'use client';
 
 // ============================================================
-// FaqSection — "Decoding the Club" accordion FAQ
+// FaqSection -- "Decoding the Club." accordion
+// Figma Make design (03-May): animated + / x toggle
 // ============================================================
 
 import { useState } from 'react';
 
-const FAQS = [
+const NAVY = '#0B1120';
+
+const FAQ_ITEMS = [
   {
-    q: 'Why do most card holders redeem poorly?',
-    a: 'Most credit card holders default to statement credits or cashback because it\'s the path of least resistance. Banks make these options prominent because they cost less. SweetRedeem helps you find the redemptions banks don\'t advertise — worth 2–4× more.',
+    q: "Why are your deals so much better than what I see on my bank's travel portal?",
+    a: "Standard bank portals (like SmartBuy or Travel Edge) use your points to buy regular cash fares at fixed, low rates--usually capping your value at Rs.0.20 to Rs.1 per point. We don't do that. We track hidden Award Inventory--special seats released directly by airlines that cost a fraction of the points. We show you how to transfer your points to those specific airlines to unlock 3x to 6x more value.",
   },
   {
-    q: 'Do you have verified deals or an algorithm?',
-    a: 'Both. Our community verifies sweet spots manually, and we track live award availability across 30+ loyalty programmes. Every deal shows its last verification date so you know how fresh it is.',
+    q: "Are these real, confirmed tickets, or standby/budget flights?",
+    a: "These are 100% confirmed, standard tickets on premium global airlines (like British Airways, Singapore Airlines, and Qatar Airways). You are flying the exact same First Class, Business, or Economy product as the person next to you who paid full retail price; you just used the smart money route to book it.",
   },
   {
-    q: 'How should I use SweetRedeem for best results?',
-    a: 'Start with the CPP Calculator — enter your card and points, and we\'ll show you the highest-value redemptions available. Focus on deals with CPP ≥ 2.0 for meaningful uplift over bank portal rates.',
+    q: "Do I transfer my points to SweetRedeem or book directly on your site?",
+    a: "No. You maintain total control of your points at all times. Think of us as your intelligence engine. We find the exact sweetspot, tell you which airline program to transfer your points to, and guide you on how to book it directly on the airline's official website.",
   },
   {
-    q: 'What cards does SweetRedeem work with?',
-    a: 'Currently: HDFC Infinia, HDFC Regalia, Axis Atlas, Axis Magnus, Amex Platinum Travel, HSBC Premier, and SBI Aurum. More cards are added regularly — sign up to be notified.',
+    q: "Which credit cards do I need to take advantage of these deals?",
+    a: "The biggest wins come from credit cards that allow you to transfer points to multiple airline partners. If you hold premium cards like the HDFC Infinia, Axis Atlas, Amex Platinum/MR cards, or Axis Magnus, you are sitting on a goldmine. You can filter our platform to only show deals matching the cards in your wallet.",
   },
   {
-    q: 'What does SweetRedeem cost?',
-    a: 'Core discovery and sweet spot browsing are completely free. A premium Club tier with real-time alerts, personalised CPP analysis, and early access to flash deals is coming. Founding members get priority access.',
+    q: "What does the Value Boost or Multiplier actually mean?",
+    a: "The math of transfer ratios can be exhausting, so we do it for you. The Multiplier shows you exactly how much extra value you are generating compared to a standard bank portal redemption. If a deal says 4x More Value, it means you are getting four times the actual rupee value for the exact same amount of points.",
   },
   {
-    q: 'Is it safe to use? Why do I need an account?',
-    a: 'We never access your bank account or card details. An optional account lets us remember your cards and send alerts when new sweet spots match your profile. You can browse anonymously forever.',
+    q: "Is there a catch? Why isn't everyone doing this?",
+    a: "The catch is that it requires knowing the secret language of airline alliances, routing rules, and transfer ratios--which the banks and airlines intentionally make confusing so you settle for standard cashback. Most people simply don't have the time to do the math. We built SweetRedeem to do the math for you.",
   },
 ];
 
 export default function FaqSection() {
-  const [open, setOpen] = useState<number | null>(null);
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   return (
-    <div style={{ padding: '40px 20px 0' }}>
+    <section style={{
+      background:  '#fff',
+      borderTop:   '1px solid #F1F5F9',
+      padding:     '40px 20px 40px',
+    }}>
+      <h2 style={{
+        fontSize:      30,
+        fontWeight:    800,
+        letterSpacing: '-0.025em',
+        lineHeight:    1.15,
+        color:         '#0f172a',
+        margin:        '0 0 8px',
+      }}>
+        Decoding<br />the Club.
+      </h2>
+      <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 32px' }}>
+        Everything you need to know before you redeem.
+      </p>
 
-      {/* ── Header ──────────────────────────────────────── */}
-      <div style={{ marginBottom: 20 }}>
-        <p style={{
-          fontSize: 11, fontWeight: 700, color: '#90a1b9',
-          letterSpacing: '1.1px', textTransform: 'uppercase',
-          margin: '0 0 8px',
-        }}>
-          Got questions?
-        </p>
-        <h2 style={{
-          fontSize: 28, fontWeight: 800, color: '#0f172b',
-          letterSpacing: '-0.5px', margin: 0,
-        }}>
-          Decoding the Club.
-        </h2>
+      <div style={{
+        borderRadius: 24,
+        border:       '1px solid #f1f5f9',
+        boxShadow:    '0 1px 4px rgba(0,0,0,0.06)',
+        overflow:     'hidden',
+      }}>
+        {FAQ_ITEMS.map((item, i) => (
+          <div
+            key={i}
+            style={{ borderBottom: i < FAQ_ITEMS.length - 1 ? '1px solid #f1f5f9' : 'none' }}
+          >
+            <button
+              onClick={() => setOpenIdx(openIdx === i ? null : i)}
+              style={{
+                width:          '100%',
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'space-between',
+                gap:            16,
+                padding:        '18px 20px',
+                textAlign:      'left',
+                background:     'transparent',
+                border:         'none',
+                cursor:         'pointer',
+              }}
+            >
+              <span style={{
+                fontSize:     14,
+                fontWeight:   600,
+                color:        '#0f172a',
+                flex:         1,
+                lineHeight:   1.4,
+                paddingRight: 8,
+              }}>
+                {item.q}
+              </span>
+              <div style={{
+                width:          28,
+                height:         28,
+                borderRadius:   9999,
+                border:         '1px solid #e2e8f0',
+                background:     openIdx === i ? NAVY : 'transparent',
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
+                flexShrink:     0,
+                transition:     'all 0.2s',
+              }}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M6 1v10M1 6h10"
+                    stroke={openIdx === i ? '#fff' : '#94a3b8'}
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    style={{
+                      transform:       openIdx === i ? 'rotate(45deg)' : 'rotate(0deg)',
+                      transformOrigin: '6px 6px',
+                      transition:      'transform 0.2s',
+                    }}
+                  />
+                </svg>
+              </div>
+            </button>
+
+            {openIdx === i && (
+              <p style={{
+                padding:    '0 20px 18px',
+                fontSize:   13,
+                fontWeight: 400,
+                color:      '#64748b',
+                lineHeight: 1.7,
+                margin:     0,
+              }}>
+                {item.a}
+              </p>
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* ── FAQ items ────────────────────────────────────── */}
-      {FAQS.map((faq, i) => (
-        <div
-          key={i}
-          onClick={() => setOpen(open === i ? null : i)}
-          style={{
-            background: '#fff',
-            borderRadius: 14,
-            border: '1px solid #e2e8f0',
-            overflow: 'hidden',
-            marginBottom: 8,
-            cursor: 'pointer',
-            boxShadow: open === i ? '0 4px 12px rgba(0,0,0,0.06)' : 'none',
-            transition: 'box-shadow 0.15s',
-          }}
+      <p style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#94a3b8' }}>
+        Still have questions?{' '}
+        <a
+          href="mailto:hello@sweetredeem.club"
+          style={{ color: '#0f172a', textDecoration: 'underline', fontWeight: 600, textUnderlineOffset: 2 }}
         >
-          <div style={{
-            display: 'flex', justifyContent: 'space-between',
-            alignItems: 'center', padding: '14px 16px',
-          }}>
-            <p style={{
-              fontSize: 13, fontWeight: 600, color: '#0f172b',
-              flex: 1, paddingRight: 8, margin: 0, lineHeight: 1.45,
-            }}>
-              {faq.q}
-            </p>
-            <span style={{
-              fontSize: 18, color: open === i ? '#2563eb' : '#90a1b9',
-              transition: 'transform 0.2s, color 0.15s',
-              transform: open === i ? 'rotate(90deg)' : 'rotate(0deg)',
-              flexShrink: 0,
-            }}>
-              ›
-            </span>
-          </div>
-          {open === i && (
-            <div style={{
-              padding: '0 16px 14px',
-              borderTop: '1px solid #f1f5f9',
-              paddingTop: 12,
-            }}>
-              <p style={{
-                fontSize: 13, color: '#64748b',
-                lineHeight: 1.7, margin: 0,
-              }}>
-                {faq.a}
-              </p>
-            </div>
-          )}
-        </div>
-      ))}
-
-    </div>
+          Contact our support team
+        </a>
+      </p>
+    </section>
   );
 }
