@@ -61,7 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
 
         {/* ── Mobile bottom nav (client component — auto-highlights active tab) */}
-        <BottomNav />
+            <BottomNav />
 
         {/* ── Vercel Analytics ──────────────────────────────── */}
         <Analytics />
